@@ -51,5 +51,5 @@ export var entity_remove = (entity, ...components) => {
 };
 
 export var entity_update = (entity, ...args) => {
-  entity.components.map(component => component.update(...args));
+  entity.components.map(component => component.update(component, ...args));
 };
