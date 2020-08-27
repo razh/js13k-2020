@@ -20,7 +20,6 @@ import {
   vec3_normalize,
   vec3_setScalar,
   vec3_subVectors,
-  vec3_Y,
 } from './vec3.js';
 
 // bg_public.h
@@ -28,8 +27,6 @@ import {
 var PMF_JUMP_HELD = 2;
 
 // bg_local.h
-var STEPSIZE = 18;
-
 var JUMP_VELOCITY = 270;
 
 // movement parameters
@@ -352,69 +349,6 @@ var player_slideMove = (() => {
   };
 })();
 
-var player_stepSlideMove = (() => {
-  var start_o = vec3_create();
-  var start_v = vec3_create();
-  var up = vec3_create();
-  var down = vec3_create();
-  var trace = trace_create();
-
-  return (player, gravity) => {
-    Object.assign(start_o, player.object.position);
-    Object.assign(start_v, player.body.velocity);
-
-    // we got exactly where we wanted to go first try
-    if (player_slideMove(player, gravity) === false) {
-      return;
-    }
-
-    Object.assign(down, start_o);
-    down.y -= STEPSIZE;
-    player_trace(player, trace, start_o, down);
-    Object.assign(up, vec3_Y);
-    // never step up when you have up velocity
-    if (
-      player.body.velocity.y > 0 &&
-      (trace.fraction === 1 || vec3_dot(player.groundTrace.normal, up) < 0.7)
-    ) {
-      return;
-    }
-
-    Object.assign(up, start_o);
-    up.y += STEPSIZE;
-
-    // test the player position if they were a stepheight higher
-    player_trace(player, trace, start_o, up);
-    if (trace.allsolid) {
-      // can't step up
-      return;
-    }
-
-    var stepSize = trace.endpos.y - start_o.y;
-    // try slidemove from this position
-    Object.assign(player.object.position, trace.endpos);
-    Object.assign(player.body.velocity, start_v);
-
-    player_slideMove(player, gravity);
-
-    // push down the final amount
-    Object.assign(down, player.object.position);
-    down.y -= stepSize;
-    player_trace(player, trace, player.object.position, down);
-    if (!trace.allsolid) {
-      Object.assign(player.object.position, trace.endpos);
-    }
-    if (trace.fraction < 1) {
-      pm_clipVelocity(player.body.velocity, trace.normal, OVERCLIP);
-    }
-
-    var delta = player.object.position.y - start_o.y;
-    if (delta > 2) {
-      player.dy = Math.min(delta, 16);
-    }
-  };
-})();
-
 var player_checkJump = player => {
   if (player.command.up < 10) {
     // not holding jump
@@ -482,7 +416,7 @@ var player_walkMove = (() => {
       return;
     }
 
-    player_stepSlideMove(player, false);
+    player_slideMove(player, false);
   };
 })();
 
@@ -528,7 +462,7 @@ var player_airMove = (() => {
       );
     }
 
-    player_stepSlideMove(player, true);
+    player_slideMove(player, true);
   };
 })();
 
