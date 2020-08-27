@@ -1,6 +1,6 @@
 export default `
-precision highp int;
 precision highp float;
+precision highp int;
 
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
@@ -13,13 +13,13 @@ varying vec3 vColor;
 varying vec3 fogPosition;
 
 void main() {
-  vColor = color;
+  vColor.xyz = color.xyz;
 
-  vec4 e = modelViewMatrix * vec4(position, 1.0);
+  vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
 
-  gl_Position = projectionMatrix * e;
-  vViewPosition = -e.xyz;
+  gl_Position = projectionMatrix * mvPosition;
+  vViewPosition = -mvPosition.xyz;
 
-  fogPosition = e.xyz;
+  fogPosition = mvPosition.xyz;
 }
 `.trim();
