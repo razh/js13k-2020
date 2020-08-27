@@ -234,8 +234,8 @@ document.addEventListener('keypress', event => {
 });
 
 document.addEventListener('click', () => {
-  running = !running;
-  if (running) {
+  if (!running) {
+    running = true;
     animate();
   }
 });
