@@ -1,15 +1,12 @@
 import { mat4_create, mat4_multiplyMatrices } from './mat4.js';
 import { material_create } from './material.js';
 import { mesh_create } from './mesh.js';
-import { vec3_clone, vec3_dot, vec3_setScalar, vec3_Y } from './vec3.js';
+import { vec3_clone, vec3_dot, vec3_Y } from './vec3.js';
 
 var shadowMatrix = mat4_create();
 var normal = vec3_clone(vec3_Y);
 
 var shadowMaterial = material_create();
-vec3_setScalar(shadowMaterial.color, 0);
-vec3_setScalar(shadowMaterial.specular, 0);
-shadowMaterial.shininess = 0;
 
 export var shadowMesh_create = mesh => {
   return {
