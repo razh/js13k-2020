@@ -2,7 +2,6 @@ import { boxGeom_create } from './boxGeom.js';
 import { align } from './boxTransforms.js';
 import { material_create } from './material.js';
 import { mesh_create } from './mesh.js';
-import { object3d_rotateY } from './object3d.js';
 
 export var file_create = color => {
   var mesh = mesh_create(
@@ -11,6 +10,5 @@ export var file_create = color => {
   );
   Object.assign(mesh.material.color, color);
   mesh.position.y += 4;
-  object3d_rotateY(mesh, Math.PI / 3);
   return mesh;
 };

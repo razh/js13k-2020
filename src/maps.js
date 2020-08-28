@@ -1,5 +1,6 @@
+import { colors } from './boxColors.js';
 import { boxGeom_create } from './boxGeom.js';
-import { align } from './boxTransforms.js';
+import { $scale, align } from './boxTransforms.js';
 import { camera_lookAt } from './camera.js';
 import { color_CYAN, color_MAGENTA, color_YELLOW } from './constants.js';
 import { light_create } from './directionalLight.js';
@@ -7,6 +8,7 @@ import { component_create, entity_add } from './entity.js';
 import { file_create } from './file.js';
 import { keys_create } from './keys.js';
 import { material_create } from './material.js';
+import { randFloat } from './math.js';
 import { mesh_create } from './mesh.js';
 import { object3d_add, object3d_create, object3d_rotateY } from './object3d.js';
 import {
@@ -20,6 +22,7 @@ import {
 import { player_create, player_update } from './player.js';
 import { selection_create } from './selection.js';
 import { shadowMesh_create } from './shadowMesh.js';
+import { compose } from './utils.js';
 import { vec3_create, vec3_multiplyScalar, vec3_set } from './vec3.js';
 
 var keys = keys_create();
@@ -75,6 +78,7 @@ export var map0 = (gl, scene, camera) => {
   player.scene = map;
 
   var alignTop = align('py');
+  var alignBottom = align('ny');
 
   var groundMesh = physics_add(
     mesh_create(alignTop(boxGeom_create(2048, 64, 2048)), material_create()),
@@ -104,6 +108,31 @@ export var map0 = (gl, scene, camera) => {
       return mesh;
     },
   );
+
+  var createBlock = ([dimensions, position, transform = alignBottom]) => {
+    var mesh = physics_add(
+      mesh_create(transform(boxGeom_create(...dimensions)), material_create()),
+      BODY_STATIC,
+    );
+    vec3_set(mesh.position, ...position);
+    createShadow(mesh);
+    object3d_add(map, mesh);
+    return mesh;
+  };
+
+  var blockTransform = compose(
+    alignBottom,
+    colors({ all: color_YELLOW, ny: color_CYAN }),
+    geom =>
+      $scale({ py: { x: randFloat(0.8, 0.9), z: randFloat(0.8, 0.9) } })(geom),
+  );
+
+  // Blocks
+  [
+    [[128, 32, 128], [0, 0, -256], blockTransform],
+    [[96, 32, 128], [-256, 0, -160], blockTransform],
+    [[128, 32, 64], [0, 0, 128], blockTransform],
+  ].map(createBlock);
 
   var wishForward = 0;
   var wishRight = 0;
