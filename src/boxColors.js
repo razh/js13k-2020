@@ -17,31 +17,23 @@ export var setFaceVertexColor = (face, index, color) => {
 };
 
 export var applyBoxVertexColors = (geom, colors) => {
-  Object.keys(colors).map(key => {
-    var color = vec3_fromArray(vec3_create(), colors[key]);
-    var indices = boxIndices[key];
+  Object.entries(colors).map(([key, value]) => {
+    var color = vec3_create();
+
+    if (Array.isArray(value)) {
+      vec3_fromArray(color, value);
+    } else if (typeof value === 'object') {
+      Object.assign(color, value);
+    } else {
+      return;
+    }
 
     geom.faces.map(face =>
-      indices.map(index => setFaceVertexColor(face, index, color)),
+      boxIndices[key].map(index => setFaceVertexColor(face, index, color)),
     );
   });
 
   return geom;
 };
 
-export var applyDefaultVertexColors = (geom, defaultColor) => {
-  var color = vec3_fromArray(vec3_create(), defaultColor);
-
-  geom.faces.map(face => {
-    for (var i = 0; i < 3; i++) {
-      if (face.vertexColors[i] === undefined) {
-        face.vertexColors[i] = color;
-      }
-    }
-  });
-
-  return geom;
-};
-
 export var colors = rearg(applyBoxVertexColors);
-export var defaultColors = rearg(applyDefaultVertexColors);
