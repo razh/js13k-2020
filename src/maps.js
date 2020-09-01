@@ -10,7 +10,12 @@ import { keys_create } from './keys.js';
 import { material_create } from './material.js';
 import { randFloat } from './math.js';
 import { mesh_create } from './mesh.js';
-import { object3d_add, object3d_create, object3d_rotateY } from './object3d.js';
+import {
+  object3d_add,
+  object3d_create,
+  object3d_remove,
+  object3d_rotateY,
+} from './object3d.js';
 import {
   BODY_DYNAMIC,
   BODY_STATIC,
@@ -23,22 +28,29 @@ import { player_create, player_update } from './player.js';
 import { selection_create } from './selection.js';
 import { shadowMesh_create } from './shadowMesh.js';
 import { compose } from './utils.js';
-import { vec3_create, vec3_multiplyScalar, vec3_set } from './vec3.js';
+import {
+  vec3_create,
+  vec3_multiplyScalar,
+  vec3_set,
+  vec3_setScalar,
+} from './vec3.js';
 
 var keys = keys_create();
 
 var CELL_SIZE = 32;
 
-var worldToGrid = (vector, position) =>
+var _v0 = vec3_create();
+var _v1 = vec3_create();
+
+var worldToGrid = vector =>
   vec3_set(
     vector,
-    Math.round(position.x / CELL_SIZE),
+    Math.round(vector.x / CELL_SIZE),
     0,
-    Math.round(position.z / CELL_SIZE),
+    Math.round(vector.z / CELL_SIZE),
   );
 
-var gridToWorld = (vector, position) =>
-  vec3_multiplyScalar(Object.assign(vector, position), CELL_SIZE);
+var gridToWorld = vector => vec3_multiplyScalar(vector, CELL_SIZE);
 
 export var map0 = (gl, scene, camera) => {
   var map = object3d_create();
@@ -98,6 +110,8 @@ export var map0 = (gl, scene, camera) => {
 
   var selectionMesh = selection_create();
   object3d_add(map, selectionMesh);
+
+  var selectedMesh;
 
   var fileMeshes = [color_CYAN, color_MAGENTA, color_YELLOW].map(
     (color, index) => {
@@ -170,14 +184,38 @@ export var map0 = (gl, scene, camera) => {
         wishRight = Math.sign(player.command.right);
       }
 
-      worldToGrid(selectionMesh.position, playerMesh.position);
+      Object.assign(selectionMesh.position, playerMesh.position);
+      worldToGrid(selectionMesh.position);
       selectionMesh.position.x += wishRight;
       selectionMesh.position.z -= wishForward;
-      gridToWorld(selectionMesh.position, selectionMesh.position);
+      Object.assign(_v0, selectionMesh.position);
+      gridToWorld(selectionMesh.position);
 
       fileMeshes.map(mesh => object3d_rotateY(mesh, dt));
     }),
   );
+
+  document.addEventListener('keydown', event => {
+    if (event.code === 'KeyE') {
+      if (selectedMesh) {
+        object3d_remove(playerMesh, selectedMesh);
+        object3d_add(map, selectedMesh);
+        Object.assign(selectedMesh.position, selectionMesh.position);
+        selectedMesh = undefined;
+      } else {
+        selectedMesh = fileMeshes.find(mesh => {
+          Object.assign(_v1, mesh.position);
+          worldToGrid(_v1);
+          return _v0.x === _v1.x && _v0.z === _v1.z;
+        });
+        if (selectedMesh) {
+          object3d_remove(map, selectedMesh);
+          object3d_add(playerMesh, selectedMesh);
+          vec3_setScalar(selectedMesh.position, 0);
+        }
+      }
+    }
+  });
 
   return {
     ambient,
