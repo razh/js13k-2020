@@ -11,6 +11,7 @@ import {
   pm_clipVelocity,
   vec3_add,
   vec3_addScaledVector,
+  vec3_clone,
   vec3_create,
   vec3_crossVectors,
   vec3_dot,
@@ -20,6 +21,7 @@ import {
   vec3_normalize,
   vec3_setScalar,
   vec3_subVectors,
+  vec3_Y,
 } from './vec3.js';
 
 // bg_public.h
@@ -39,6 +41,8 @@ var pm_friction = 6;
 
 var g_speed = 320;
 var g_gravity = 800;
+
+var player_groundTrace_normal = vec3_clone(vec3_Y);
 
 export var player_create = (object, body) => {
   return {
@@ -66,9 +70,6 @@ export var player_create = (object, body) => {
     movementFlags: 0,
     walking: false,
     groundPlane: false,
-    groundTrace: {
-      normal: vec3_create(0, 1, 0),
-    },
   };
 };
 
@@ -182,7 +183,7 @@ var player_slideMove = (() => {
         // slide along the ground plane
         pm_clipVelocity(
           player.body.velocity,
-          player.groundTrace.normal,
+          player_groundTrace_normal,
           OVERCLIP,
         );
       }
@@ -193,7 +194,7 @@ var player_slideMove = (() => {
     // never turn against the ground plane
     if (player.groundPlane) {
       numplanes = 1;
-      Object.assign(planes[0], player.groundTrace.normal);
+      Object.assign(planes[0], player_groundTrace_normal);
     } else {
       numplanes = 0;
     }
@@ -391,8 +392,8 @@ var player_walkMove = (() => {
     player.viewRight.y = 0;
 
     // project the forward and right directions onto the ground plane
-    pm_clipVelocity(player.viewForward, player.groundTrace.normal, OVERCLIP);
-    pm_clipVelocity(player.viewRight, player.groundTrace.normal, OVERCLIP);
+    pm_clipVelocity(player.viewForward, player_groundTrace_normal, OVERCLIP);
+    pm_clipVelocity(player.viewRight, player_groundTrace_normal, OVERCLIP);
     //
     vec3_normalize(player.viewForward);
     vec3_normalize(player.viewRight);
@@ -409,7 +410,7 @@ var player_walkMove = (() => {
     player_accelerate(player, wishdir, wishspeed, pm_accelerate);
 
     // slide along the ground plane
-    pm_clipVelocity(player.body.velocity, player.groundTrace.normal, OVERCLIP);
+    pm_clipVelocity(player.body.velocity, player_groundTrace_normal, OVERCLIP);
 
     // don't do anything if standing still
     if (!player.body.velocity.x && !player.body.velocity.z) {
@@ -457,7 +458,7 @@ var player_airMove = (() => {
     if (player.groundPlane) {
       pm_clipVelocity(
         player.body.velocity,
-        player.groundTrace.normal,
+        player_groundTrace_normal,
         OVERCLIP,
       );
     }
