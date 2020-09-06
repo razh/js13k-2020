@@ -201,6 +201,7 @@ export var map0 = (gl, scene, camera) => {
         object3d_remove(playerMesh, selectedMesh);
         object3d_add(map, selectedMesh);
         Object.assign(selectedMesh.position, selectionMesh.position);
+        vec3_setScalar(selectedMesh.scale, 1);
         selectedMesh = undefined;
       } else {
         selectedMesh = fileMeshes.find(mesh => {
@@ -211,7 +212,8 @@ export var map0 = (gl, scene, camera) => {
         if (selectedMesh) {
           object3d_remove(map, selectedMesh);
           object3d_add(playerMesh, selectedMesh);
-          vec3_setScalar(selectedMesh.position, 0);
+          vec3_set(selectedMesh.position, 16, 24, 16);
+          vec3_setScalar(selectedMesh.scale, 0.5);
         }
       }
     }
