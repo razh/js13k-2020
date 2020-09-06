@@ -34,12 +34,17 @@ import { selection_create } from './selection.js';
 import { shadowMesh_create } from './shadowMesh.js';
 import { compose } from './utils.js';
 import {
+  vec3_applyQuaternion,
   vec3_create,
+  vec3_cross,
   vec3_multiplyScalar,
+  vec3_normalize,
   vec3_set,
   vec3_setScalar,
   vec3_Y,
 } from './vec3.js';
+
+var DEBUG = true;
 
 var keys = keys_create();
 
@@ -179,7 +184,21 @@ export var map0 = (gl, scene, camera) => {
       vec3_set(player.viewForward, 0, 0, -1);
       vec3_set(player.viewRight, 1, 0, 0);
 
+      if (DEBUG) {
+        vec3_applyQuaternion(
+          vec3_set(player.viewForward, 0, 0, -1),
+          camera.quaternion,
+        );
+        vec3_normalize(
+          vec3_cross(vec3_set(player.viewRight, 0, -1, 0), player.viewForward),
+        );
+      }
+
       player_update(player);
+
+      if (DEBUG) {
+        Object.assign(cameraObject.position, playerMesh.position);
+      }
 
       if (player.command.forward || player.command.right) {
         wishForward = Math.sign(player.command.forward);
