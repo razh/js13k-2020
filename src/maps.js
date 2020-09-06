@@ -5,11 +5,11 @@ import { camera_lookAt } from './camera.js';
 import { color_CYAN, color_MAGENTA, color_YELLOW } from './constants.js';
 import { light_create } from './directionalLight.js';
 import { component_create, entity_add } from './entity.js';
-import { file_create } from './file.js';
 import { keys_create } from './keys.js';
 import { material_create } from './material.js';
 import { randFloat } from './math.js';
 import { mesh_create } from './mesh.js';
+import { file_create, mac_create } from './models.js';
 import {
   object3d_add,
   object3d_create,
@@ -25,6 +25,11 @@ import {
   physics_update,
 } from './physics.js';
 import { player_create, player_update } from './player.js';
+import {
+  quat_create,
+  quat_rotateTowards,
+  quat_setFromAxisAngle,
+} from './quat.js';
 import { selection_create } from './selection.js';
 import { shadowMesh_create } from './shadowMesh.js';
 import { compose } from './utils.js';
@@ -33,12 +38,14 @@ import {
   vec3_multiplyScalar,
   vec3_set,
   vec3_setScalar,
+  vec3_Y,
 } from './vec3.js';
 
 var keys = keys_create();
 
 var CELL_SIZE = 32;
 
+var _q0 = quat_create();
 var _v0 = vec3_create();
 var _v1 = vec3_create();
 
@@ -72,16 +79,11 @@ export var map0 = (gl, scene, camera) => {
   object3d_add(cameraObject, camera);
   object3d_add(map, cameraObject);
 
-  vec3_set(camera.position, 0, 160, 128);
+  vec3_set(camera.position, 0, 128, 128);
   camera_lookAt(camera, vec3_create());
 
   // Action
-  var playerMesh = physics_add(
-    mesh_create(boxGeom_create(24, 32, 24), material_create()),
-    BODY_DYNAMIC,
-  );
-  playerMesh.position.y += 16;
-  Object.assign(playerMesh.material.color, color_MAGENTA);
+  var playerMesh = physics_add(mac_create(), BODY_DYNAMIC);
   object3d_add(map, playerMesh);
 
   var playerPhysics = get_physics_component(playerMesh);
@@ -182,6 +184,9 @@ export var map0 = (gl, scene, camera) => {
       if (player.command.forward || player.command.right) {
         wishForward = Math.sign(player.command.forward);
         wishRight = Math.sign(player.command.right);
+
+        quat_setFromAxisAngle(_q0, vec3_Y, Math.atan2(wishRight, -wishForward));
+        quat_rotateTowards(playerMesh.quaternion, _q0, 12 * dt);
       }
 
       Object.assign(selectionMesh.position, playerMesh.position);
