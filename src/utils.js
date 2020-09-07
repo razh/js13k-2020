@@ -9,3 +9,7 @@ export var remove = (array, element) => {
     array.splice(index, 1);
   }
 };
+
+export var sample = array => {
+  return array[Math.floor(Math.random() * array.length)];
+};
