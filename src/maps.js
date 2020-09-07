@@ -9,7 +9,7 @@ import { keys_create } from './keys.js';
 import { material_create } from './material.js';
 import { randFloat } from './math.js';
 import { mesh_create } from './mesh.js';
-import { file_create, mac_create } from './models.js';
+import { file_create, mac_create, text_create } from './models.js';
 import {
   object3d_add,
   object3d_create,
@@ -30,9 +30,10 @@ import {
   quat_rotateTowards,
   quat_setFromAxisAngle,
 } from './quat.js';
+import { ray_create, ray_intersectObjects } from './ray.js';
 import { selection_create } from './selection.js';
 import { shadowMesh_create } from './shadowMesh.js';
-import { compose } from './utils.js';
+import { compose, sample } from './utils.js';
 import {
   vec3_applyQuaternion,
   vec3_create,
@@ -40,7 +41,9 @@ import {
   vec3_multiplyScalar,
   vec3_normalize,
   vec3_set,
+  vec3_setFromMatrixPosition,
   vec3_setScalar,
+  vec3_subVectors,
   vec3_Y,
 } from './vec3.js';
 
@@ -49,8 +52,10 @@ var DEBUG = true;
 var keys = keys_create();
 
 var CELL_SIZE = 32;
+var SHADOW_BIAS = 0.1;
 
 var _q0 = quat_create();
+var _r0 = ray_create();
 var _v0 = vec3_create();
 var _v1 = vec3_create();
 
@@ -108,7 +113,7 @@ export var map0 = (gl, scene, camera) => {
 
   var createShadow = mesh => {
     var shadowMesh = shadowMesh_create(mesh);
-    shadowMesh.position.y = 0.1;
+    shadowMesh.position.y = SHADOW_BIAS;
     shadowMesh.light = light0;
     mesh.shadow = shadowMesh;
   };
@@ -169,6 +174,13 @@ export var map0 = (gl, scene, camera) => {
   var wishForward = 0;
   var wishRight = 0;
 
+  var traceShadow = (groundMeshes, mesh) => {
+    vec3_setFromMatrixPosition(_v0, mesh.matrixWorld);
+    Object.assign(_r0.origin, _v0);
+    vec3_subVectors(_r0.direction, _v0, light0.position);
+    return ray_intersectObjects(_r0, groundMeshes)?.[0];
+  };
+
   entity_add(
     map,
     component_create((component, dt) => {
@@ -218,6 +230,16 @@ export var map0 = (gl, scene, camera) => {
         quat_setFromAxisAngle(_q0, vec3_Y, Math.atan2(wishRight, -wishForward));
         quat_rotateTowards(playerMesh.quaternion, _q0, 12 * dt);
       }
+
+      var groundMeshes = physics_bodies(scene)
+        .filter(body => body.physics === BODY_STATIC)
+        .map(body => body.parent);
+
+      [...fileMeshes, playerMesh].map(
+        mesh =>
+          (mesh.shadow.position.y =
+            (traceShadow(groundMeshes, mesh)?.point.y || 0) + SHADOW_BIAS),
+      );
 
       Object.assign(selectionMesh.position, playerMesh.position);
       worldToGrid(selectionMesh.position);
