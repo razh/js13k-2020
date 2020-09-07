@@ -2,7 +2,7 @@ import { colors } from './boxColors.js';
 import { boxGeom_create } from './boxGeom.js';
 import { $scale, align } from './boxTransforms.js';
 import { camera_lookAt } from './camera.js';
-import { color_CYAN, color_MAGENTA, color_YELLOW } from './constants.js';
+import { color_CYAN, color_ORANGE, color_YELLOW } from './constants.js';
 import { light_create } from './directionalLight.js';
 import { component_create, entity_add } from './entity.js';
 import { keys_create } from './keys.js';
@@ -120,15 +120,26 @@ export var map0 = (gl, scene, camera) => {
 
   var selectedMesh;
 
-  var fileMeshes = [color_CYAN, color_MAGENTA, color_YELLOW].map(
-    (color, index) => {
-      var mesh = file_create(color);
-      mesh.position.x -= 64 * (index + 1);
-      createShadow(mesh);
-      object3d_add(map, mesh);
-      return mesh;
-    },
-  );
+  var fileMeshes = [...Array(3)].map((_, index) => {
+    var [color, text] = sample([
+      [color_ORANGE, 'HTML'],
+      [color_CYAN, 'CSS'],
+      [color_YELLOW, 'JS'],
+    ]);
+    var mesh = file_create(color);
+    mesh.position.x = -64 * (index + 1);
+    mesh.position.y = 4;
+    var frontTextMesh = text_create(text);
+    var backTextMesh = text_create(text);
+    vec3_set(backTextMesh.scale, -1, 1, -1);
+    vec3_set(frontTextMesh.position, 0, 12, 1);
+    vec3_set(backTextMesh.position, 0, 12, -1);
+    object3d_add(mesh, frontTextMesh);
+    object3d_add(mesh, backTextMesh);
+    createShadow(mesh);
+    object3d_add(map, mesh);
+    return mesh;
+  });
 
   var createBlock = ([dimensions, position, transform = alignBottom]) => {
     var mesh = physics_add(
