@@ -156,6 +156,13 @@ export var vec3_max = (a, b) => {
   return a;
 };
 
+export var vec3_round = v => {
+  v.x = Math.round(v.x);
+  v.y = Math.round(v.y);
+  v.z = Math.round(v.z);
+  return v;
+};
+
 export var vec3_negate = v => {
   v.x = -v.x;
   v.y = -v.y;
