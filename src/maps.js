@@ -9,7 +9,12 @@ import { keys_create } from './keys.js';
 import { material_create } from './material.js';
 import { randFloat } from './math.js';
 import { mesh_create } from './mesh.js';
-import { file_create, mac_create, text_create } from './models.js';
+import {
+  bridge_create,
+  file_create,
+  mac_create,
+  text_create,
+} from './models.js';
 import {
   object3d_add,
   object3d_create,
@@ -74,8 +79,8 @@ export var map0 = (gl, scene, camera) => {
   Object.assign(scene.fogColor, ambient);
 
   var light0 = light_create(vec3_create(1, 1, 1.2));
-  light0.intensity = 3;
-  vec3_set(light0.position, 512, 256, 512);
+  light0.intensity = 1.5;
+  vec3_set(light0.position, 256, 512, 256);
 
   var directional = [light0];
   directional.map(light => object3d_add(map, light));
@@ -121,7 +126,7 @@ export var map0 = (gl, scene, camera) => {
 
   var selectedMesh;
 
-  var fileMeshes = [...Array(3)].map((_, index) => {
+  var fileMeshes = [...Array(6)].map((_, index) => {
     var [color, text] = sample([
       [color_ORANGE, 'HTML'],
       [color_CYAN, 'CSS'],
@@ -129,7 +134,6 @@ export var map0 = (gl, scene, camera) => {
     ]);
     var mesh = file_create(color);
     mesh.position.x = -64 * (index + 1);
-    mesh.position.y = 4;
     var frontTextMesh = text_create(text);
     var backTextMesh = text_create(text);
     vec3_set(backTextMesh.scale, -1, 1, -1);
@@ -141,6 +145,29 @@ export var map0 = (gl, scene, camera) => {
     object3d_add(map, mesh);
     return mesh;
   });
+
+  [
+    [
+      [-992, 96, -64],
+      [256, 96, -64],
+    ],
+    [
+      [96, 64, -160],
+      [96, 64, 256],
+    ],
+    [
+      [-96, 128, -512],
+      [-96, 128, 512],
+    ],
+  ]
+    .flatMap(([start, end]) =>
+      bridge_create(vec3_create(...start), vec3_create(...end)),
+    )
+    .map(mesh => {
+      var physicsMesh = physics_add(mesh, BODY_STATIC);
+      createShadow(physicsMesh);
+      object3d_add(map, physicsMesh);
+    });
 
   var createBlock = ([dimensions, position, transform = alignBottom]) => {
     var mesh = physics_add(

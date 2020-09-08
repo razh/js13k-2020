@@ -5,14 +5,86 @@ import { clone, geom_create, merge, scale, translate } from './geom.js';
 import { material_create } from './material.js';
 import { mesh_create } from './mesh.js';
 import { compose } from './utils.js';
-import { vec3_addScaledVector, vec3_setScalar } from './vec3.js';
+import {
+  vec3_addScaledVector,
+  vec3_create,
+  vec3_length,
+  vec3_setScalar,
+  vec3_subVectors,
+} from './vec3.js';
+
+var _v0 = vec3_create();
+
+export var bridge_create = (start, end, height = start.y) => {
+  vec3_subVectors(_v0, start, end);
+  var width = 48;
+  var length = vec3_length(_v0);
+  var isX = _v0.x !== 0;
+  var direction = isX ? 'x' : 'z';
+
+  var deckHeight = 12;
+  var capHeight = 8;
+
+  var pierWidth = 24;
+  var pierHeight = height - deckHeight - capHeight;
+  var pierSpacing = 128;
+  var pierCount = Math.floor(length / pierSpacing) - 1;
+
+  var deck = align('py')(
+    isX
+      ? boxGeom_create(length, deckHeight, width)
+      : boxGeom_create(width, deckHeight, length),
+  );
+
+  var piers = [...Array(pierCount)].flatMap((_, index) => {
+    var offset = pierSpacing * (index + 1);
+
+    var cap = compose(
+      relativeAlign('py', deck, 'ny'),
+      $scale({ py: { [direction]: 2 } }),
+    )(
+      isX
+        ? boxGeom_create(pierWidth, capHeight, width)
+        : boxGeom_create(width, capHeight, pierWidth),
+    );
+
+    var pier = compose(
+      relativeAlign('py', cap, 'ny'),
+      colors({ py: [1, 1, 1], ny: [0, 0, 0] }),
+    )(
+      isX
+        ? boxGeom_create(pierWidth, pierHeight, width)
+        : boxGeom_create(width, pierHeight, pierWidth),
+    );
+
+    return [cap, pier].map(
+      isX ? translate(offset, 0, 0) : translate(0, 0, offset),
+    );
+  });
+
+  return [
+    // Align deck to start.
+    align(isX ? 'nx_py' : 'py_nz')(deck),
+    ...piers,
+  ].map(geometry => {
+    var material = material_create();
+    vec3_setScalar(material.color, 1.5);
+    return mesh_create(
+      translate(start.x, start.y, start.z)(geometry),
+      material,
+    );
+  });
+};
 
 export var file_create = color => {
   var material = material_create();
   Object.assign(material.color, color);
   vec3_addScaledVector(material.emissive, color, 0.1);
 
-  return mesh_create(align('ny')(boxGeom_create(28, 32, 2)), material);
+  return mesh_create(
+    compose(align('ny'), translate(0, 4, 0))(boxGeom_create(28, 32, 2)),
+    material,
+  );
 };
 
 export var mac_create = () => {
@@ -56,7 +128,7 @@ export var mac_create = () => {
   )(geom_create());
 
   var material = material_create();
-  vec3_setScalar(material.color, 1.2);
+  vec3_setScalar(material.color, 1.5);
   material.shininess = 0;
 
   return mesh_create(geometry, material);
