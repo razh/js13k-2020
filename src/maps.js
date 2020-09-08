@@ -15,6 +15,7 @@ import {
   object3d_create,
   object3d_remove,
   object3d_rotateY,
+  object3d_updateWorldMatrix,
 } from './object3d.js';
 import {
   BODY_DYNAMIC,
@@ -38,8 +39,10 @@ import {
   vec3_applyQuaternion,
   vec3_create,
   vec3_cross,
+  vec3_divideScalar,
   vec3_multiplyScalar,
   vec3_normalize,
+  vec3_round,
   vec3_set,
   vec3_setFromMatrixPosition,
   vec3_setScalar,
@@ -59,14 +62,7 @@ var _r0 = ray_create();
 var _v0 = vec3_create();
 var _v1 = vec3_create();
 
-var worldToGrid = vector =>
-  vec3_set(
-    vector,
-    Math.round(vector.x / CELL_SIZE),
-    0,
-    Math.round(vector.z / CELL_SIZE),
-  );
-
+var worldToGrid = vector => vec3_round(vec3_divideScalar(vector, CELL_SIZE));
 var gridToWorld = vector => vec3_multiplyScalar(vector, CELL_SIZE);
 
 export var map0 = (gl, scene, camera) => {
@@ -174,10 +170,20 @@ export var map0 = (gl, scene, camera) => {
   var wishForward = 0;
   var wishRight = 0;
 
-  var traceShadow = (groundMeshes, mesh) => {
-    vec3_setFromMatrixPosition(_v0, mesh.matrixWorld);
-    Object.assign(_r0.origin, _v0);
-    vec3_subVectors(_r0.direction, _v0, light0.position);
+  var groundMeshes;
+
+  var traceGround = mesh => {
+    Object.assign(_r0.origin, mesh.position);
+    _r0.origin.y += CELL_SIZE;
+    vec3_set(_r0.direction, 0, -1, 0);
+    return ray_intersectObjects(_r0, groundMeshes)?.[0];
+  };
+
+  var traceShadow = mesh => {
+    // Use mesh.matrixWorld to account for parent transforms.
+    object3d_updateWorldMatrix(mesh);
+    vec3_setFromMatrixPosition(_r0.origin, mesh.matrixWorld);
+    vec3_subVectors(_r0.direction, _r0.origin, light0.position);
     return ray_intersectObjects(_r0, groundMeshes)?.[0];
   };
 
@@ -231,14 +237,14 @@ export var map0 = (gl, scene, camera) => {
         quat_rotateTowards(playerMesh.quaternion, _q0, 12 * dt);
       }
 
-      var groundMeshes = physics_bodies(scene)
+      groundMeshes = physics_bodies(scene)
         .filter(body => body.physics === BODY_STATIC)
         .map(body => body.parent);
 
       [...fileMeshes, playerMesh].map(
         mesh =>
           (mesh.shadow.position.y =
-            (traceShadow(groundMeshes, mesh)?.point.y || 0) + SHADOW_BIAS),
+            (traceShadow(mesh)?.point.y || 0) + SHADOW_BIAS),
       );
 
       Object.assign(selectionMesh.position, playerMesh.position);
@@ -247,6 +253,8 @@ export var map0 = (gl, scene, camera) => {
       selectionMesh.position.z -= wishForward;
       Object.assign(_v0, selectionMesh.position);
       gridToWorld(selectionMesh.position);
+      selectionMesh.position.y = playerMesh.position.y;
+      selectionMesh.position.y = traceGround(selectionMesh)?.point.y || 0;
 
       fileMeshes.map(mesh => object3d_rotateY(mesh, dt));
     }),
