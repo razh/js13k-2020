@@ -1,5 +1,6 @@
 import { colors } from './boxColors.js';
 import { boxGeom_create } from './boxGeom.js';
+import { ny, py } from './boxIndices.js';
 import { $scale, align } from './boxTransforms.js';
 import { camera_lookAt } from './camera.js';
 import { color_CYAN, color_ORANGE, color_YELLOW } from './constants.js';
@@ -124,8 +125,8 @@ export var map0 = (gl, scene, camera) => {
   var player = player_create(playerMesh, playerPhysics);
   player.scene = map;
 
-  var alignTop = align('py');
-  var alignBottom = align('ny');
+  var alignTop = align(py);
+  var alignBottom = align(ny);
 
   var groundMesh = physics_add(
     mesh_create(alignTop(boxGeom_create(2048, 64, 2048)), material_create()),
@@ -203,9 +204,9 @@ export var map0 = (gl, scene, camera) => {
 
   var blockTransform = compose(
     alignBottom,
-    colors({ py: color_YELLOW, ny: color_CYAN }),
+    colors([py, color_YELLOW], [ny, color_CYAN]),
     geom =>
-      $scale({ py: { x: randFloat(0.8, 0.9), z: randFloat(0.8, 0.9) } })(geom),
+      $scale([py, { x: randFloat(0.8, 0.9), z: randFloat(0.8, 0.9) }])(geom),
   );
 
   // Blocks

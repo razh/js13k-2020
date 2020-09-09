@@ -1,5 +1,6 @@
 import { colors } from './boxColors.js';
 import { boxGeom_create } from './boxGeom.js';
+import { all, nx_py, ny, nz, py, py_nz, pz } from './boxIndices.js';
 import { $scale, $translateY, align, relativeAlign } from './boxTransforms.js';
 import { clone, geom_create, merge, scale, translate } from './geom.js';
 import { material_create } from './material.js';
@@ -31,7 +32,7 @@ export var bridge_create = (start, end, height = start.y) => {
   var pierSpacing = 128;
   var pierCount = Math.floor(length / pierSpacing) - 1;
 
-  var deck = align('py')(
+  var deck = align(py)(
     isX
       ? boxGeom_create(length, deckHeight, width)
       : boxGeom_create(width, deckHeight, length),
@@ -40,15 +41,15 @@ export var bridge_create = (start, end, height = start.y) => {
   var piers = [...Array(pierCount)].flatMap((_, index) => {
     var offset = pierSpacing * (index + 1);
 
-    var cap = compose(relativeAlign('py', deck, 'ny'))(
+    var cap = compose(relativeAlign(py, deck, ny))(
       isX
         ? boxGeom_create(capWidth, capHeight, width)
         : boxGeom_create(width, capHeight, capWidth),
     );
 
     var pier = compose(
-      relativeAlign('py', cap, 'ny'),
-      colors({ py: 1, ny: 0 }),
+      relativeAlign(py, cap, ny),
+      colors([py, 1], [ny, 0]),
     )(
       isX
         ? boxGeom_create(pierWidth, pierHeight, pierDepth)
@@ -62,7 +63,7 @@ export var bridge_create = (start, end, height = start.y) => {
 
   return [
     // Align deck to start.
-    align(isX ? 'nx_py' : 'py_nz')(deck),
+    align(isX ? nx_py : py_nz)(deck),
     ...piers,
   ].map(geometry => {
     var material = material_create();
@@ -80,7 +81,7 @@ export var file_create = color => {
   vec3_addScaledVector(material.emissive, color, 0.1);
 
   return mesh_create(
-    compose(align('ny'), translate(0, 4, 0))(boxGeom_create(28, 32, 2)),
+    compose(align(ny), translate(0, 4, 0))(boxGeom_create(28, 32, 2)),
     material,
   );
 };
@@ -94,25 +95,25 @@ export var mac_create = () => {
   var backScale = { x: 0.8 };
 
   var base = compose(
-    align('ny'),
-    $scale({ ny: [baseSize / size, 1, baseSize / size], nz: backScale }),
+    align(ny),
+    $scale([ny, [baseSize / size, 1, baseSize / size]], [nz, backScale]),
   )(boxGeom_create(size, baseHeight, size));
 
   var body = compose(
-    $scale({ nz: backScale }),
-    relativeAlign('ny', base, 'py'),
-    $translateY({ py_nz: -6 }),
+    $scale([nz, backScale]),
+    relativeAlign(ny, base, py),
+    $translateY([py_nz, -6]),
   )(boxGeom_create(size, bodyHeight, size));
 
   var screen = compose(
-    colors({ all: [0.1, 0.2, 0.2] }),
+    colors([all, [0.1, 0.2, 0.2]]),
     scale(0.8, 0.8, 1),
-    relativeAlign('nz', body, 'pz'),
+    relativeAlign(nz, body, pz),
   )(boxGeom_create(size, bodyHeight, 0.5));
 
   var eye = compose(
-    colors({ all: [1, 256, 2] }),
-    relativeAlign('nz', screen, 'pz'),
+    colors([all, [1, 256, 2]]),
+    relativeAlign(nz, screen, pz),
   )(boxGeom_create(3, 8, 0.5));
 
   var geometry = compose(
@@ -181,7 +182,7 @@ export var text_create = string => {
 
         return parameters?.map(([x, y, xt = 0, yt = 0]) =>
           compose(
-            align('nx_py'),
+            align(nx_py),
             translate(
               xt +
                 charWidth * (index - string.length / 2) +

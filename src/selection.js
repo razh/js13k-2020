@@ -1,4 +1,5 @@
 import { boxGeom_create } from './boxGeom.js';
+import { nx_ny_nz, nx_ny_pz, px_ny_nz, px_ny_pz } from './boxIndices.js';
 import { align } from './boxTransforms.js';
 import { clone, geom_create, merge, translate } from './geom.js';
 import { material_create } from './material.js';
@@ -17,10 +18,10 @@ export var selection_create = () => {
 
   var geometry = compose(
     ...[
-      ['px_ny_pz', 1, 1],
-      ['px_ny_nz', 1, -1],
-      ['nx_ny_nz', -1, -1],
-      ['nx_ny_pz', -1, 1],
+      [px_ny_pz, 1, 1],
+      [px_ny_nz, 1, -1],
+      [nx_ny_nz, -1, -1],
+      [nx_ny_pz, -1, 1],
     ].flatMap(([alignment, x, z]) =>
       [segmentWidthGeometry, segmentDepthGeometry].map(
         compose(

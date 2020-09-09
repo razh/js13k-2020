@@ -1,4 +1,3 @@
-import boxIndices from './boxIndices.js';
 import { geom_translate } from './geom.js';
 import { rearg } from './utils.js';
 import {
@@ -37,8 +36,8 @@ var computeCentroid = (geom, indices, vector = vec3_create()) => {
 var alignBoxVertices = (() => {
   var centroid = vec3_create();
 
-  return (geom, key) => {
-    computeCentroid(geom, boxIndices[key], centroid);
+  return (geom, indices) => {
+    computeCentroid(geom, indices, centroid);
     return geom_translate(geom, -centroid.x, -centroid.y, -centroid.z);
   };
 })();
@@ -48,9 +47,9 @@ var relativeAlignBoxVertices = (() => {
   var centroidB = vec3_create();
   var delta = vec3_create();
 
-  return (geomA, keyA, geomB, keyB) => {
-    computeCentroid(geomA, boxIndices[keyA], centroidA);
-    computeCentroid(geomB, boxIndices[keyB], centroidB);
+  return (geomA, indicesA, geomB, indicesB) => {
+    computeCentroid(geomA, indicesA, centroidA);
+    computeCentroid(geomB, indicesB, centroidB);
 
     vec3_subVectors(delta, centroidB, centroidA);
     return geom_translate(geomA, delta.x, delta.y, delta.z);
@@ -64,10 +63,10 @@ var transformBoxVertices = (() => {
   var vector = vec3_create();
 
   return (method, identity = vec3_create()) => {
-    return (geom, vectors) => {
-      Object.entries(vectors).map(([key, delta]) => {
+    return (geom, ...vectors) => {
+      vectors.map(([indices, delta]) => {
         setVector(vector, delta, identity);
-        boxIndices[key].map(index => method(geom.vertices[index], vector));
+        indices.map(index => method(geom.vertices[index], vector));
       });
 
       return geom;
@@ -85,11 +84,11 @@ var transformAxisBoxVertices = (() => {
 
   return (method, identity = vec3_create()) => {
     return axis => {
-      return (geom, vectors) => {
-        Object.entries(vectors).map(([key, delta = identity[axis]]) => {
+      return (geom, ...vectors) => {
+        vectors.map(([indices, delta = identity[axis]]) => {
           Object.assign(vector, identity);
           vector[axis] = delta;
-          boxIndices[key].map(index => method(geom.vertices[index], vector));
+          indices.map(index => method(geom.vertices[index], vector));
         });
 
         return geom;
@@ -105,9 +104,9 @@ export var $translateY = rearg(translateAxisBoxVertices('y'));
 export var $translateZ = rearg(translateAxisBoxVertices('z'));
 
 var callBoxVertices = method => {
-  return (geom, vectors) => {
-    Object.entries(vectors).map(([key, value]) =>
-      boxIndices[key].map(index => method(geom.vertices[index], value)),
+  return (geom, ...vectors) => {
+    vectors.map(([indices, value]) =>
+      indices.map(index => method(geom.vertices[index], value)),
     );
 
     return geom;
