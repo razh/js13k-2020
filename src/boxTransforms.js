@@ -14,6 +14,17 @@ import {
   vec3_subVectors,
 } from './vec3.js';
 
+// Color#set().
+export var setVector = (vector, value, identity) => {
+  if (Array.isArray(value)) {
+    vec3_fromArray(vector, value);
+  } else if (typeof value === 'object') {
+    Object.assign(vector, identity, value);
+  } else if (typeof value === 'number') {
+    vec3_setScalar(vector, value);
+  }
+};
+
 var computeCentroid = (geom, indices, vector = vec3_create()) => {
   vec3_setScalar(vector, 0);
 
@@ -55,16 +66,7 @@ var transformBoxVertices = (() => {
   return (method, identity = vec3_create()) => {
     return (geom, vectors) => {
       Object.entries(vectors).map(([key, delta]) => {
-        if (Array.isArray(delta)) {
-          vec3_fromArray(vector, delta);
-        } else if (typeof delta === 'object') {
-          Object.assign(vector, identity, delta);
-        } else if (typeof delta === 'number') {
-          vec3_setScalar(vector, delta);
-        } else {
-          return;
-        }
-
+        setVector(vector, delta, identity);
         boxIndices[key].map(index => method(geom.vertices[index], vector));
       });
 

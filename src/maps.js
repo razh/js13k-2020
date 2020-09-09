@@ -203,7 +203,7 @@ export var map0 = (gl, scene, camera) => {
 
   var blockTransform = compose(
     alignBottom,
-    colors({ all: color_YELLOW, ny: color_CYAN }),
+    colors({ py: color_YELLOW, ny: color_CYAN }),
     geom =>
       $scale({ py: { x: randFloat(0.8, 0.9), z: randFloat(0.8, 0.9) } })(geom),
   );

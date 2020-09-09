@@ -48,7 +48,7 @@ export var bridge_create = (start, end, height = start.y) => {
 
     var pier = compose(
       relativeAlign('py', cap, 'ny'),
-      colors({ py: [1, 1, 1], ny: [0, 0, 0] }),
+      colors({ py: 1, ny: 0 }),
     )(
       isX
         ? boxGeom_create(pierWidth, pierHeight, pierDepth)
