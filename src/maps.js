@@ -46,7 +46,10 @@ import {
   vec3_applyQuaternion,
   vec3_create,
   vec3_cross,
+  vec3_distanceTo,
+  vec3_distanceToSquared,
   vec3_divideScalar,
+  vec3_equals,
   vec3_multiplyScalar,
   vec3_normalize,
   vec3_round,
@@ -72,6 +75,22 @@ var cameraDelta = vec3_create(0, 128, 128);
 
 var worldToGrid = vector => vec3_round(vec3_divideScalar(vector, CELL_SIZE));
 var gridToWorld = vector => vec3_multiplyScalar(vector, CELL_SIZE);
+
+var findNearestObject = (point, objects) => {
+  var nearestObject;
+  var minDistanceSquared = Infinity;
+  var distanceSquared;
+
+  objects.map(object => {
+    distanceSquared = vec3_distanceToSquared(object.position, point);
+    if (distanceSquared < minDistanceSquared) {
+      minDistanceSquared = distanceSquared;
+      nearestObject = object;
+    }
+  });
+
+  return nearestObject;
+};
 
 export var map0 = (gl, scene, camera) => {
   var map = object3d_create();
@@ -278,10 +297,28 @@ export var map0 = (gl, scene, camera) => {
       worldToGrid(selectionMesh.position);
       selectionMesh.position.x += wishRight;
       selectionMesh.position.z -= wishForward;
-      Object.assign(_v0, selectionMesh.position);
       gridToWorld(selectionMesh.position);
       selectionMesh.position.y = playerMesh.position.y;
-      selectionMesh.position.y = traceGround(selectionMesh)?.point.y || 0;
+      selectionMesh.visible = true;
+      // Snap to nearest file if no current selection.
+      var nearestFileMesh;
+      if (
+        !selectedMesh &&
+        (nearestFileMesh = findNearestObject(
+          playerMesh.position,
+          fileMeshes,
+        )) &&
+        vec3_distanceTo(playerMesh.position, nearestFileMesh.position) <
+          CELL_SIZE
+      ) {
+        Object.assign(selectionMesh.position, nearestFileMesh.position);
+      } else {
+        // Find nearest reachable ground.
+        selectionMesh.position.y = traceGround(selectionMesh)?.point.y || 0;
+        selectionMesh.visible =
+          vec3_distanceTo(selectionMesh.position, playerMesh.position) <
+          2 * CELL_SIZE;
+      }
 
       fileMeshes.map(mesh => object3d_rotateY(mesh, dt));
     }),
@@ -295,11 +332,13 @@ export var map0 = (gl, scene, camera) => {
         Object.assign(selectedMesh.position, selectionMesh.position);
         vec3_setScalar(selectedMesh.scale, 1);
         selectedMesh = undefined;
-      } else {
+      } else if (selectionMesh.visible) {
+        Object.assign(_v0, selectionMesh.position);
+        worldToGrid(_v0);
         selectedMesh = fileMeshes.find(mesh => {
           Object.assign(_v1, mesh.position);
           worldToGrid(_v1);
-          return _v0.x === _v1.x && _v0.z === _v1.z;
+          return vec3_equals(_v0, _v1);
         });
         if (selectedMesh) {
           object3d_remove(map, selectedMesh);
