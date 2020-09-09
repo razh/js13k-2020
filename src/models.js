@@ -17,16 +17,17 @@ var _v0 = vec3_create();
 
 export var bridge_create = (start, end, height = start.y) => {
   vec3_subVectors(_v0, start, end);
-  var width = 48;
+  var width = 64;
   var length = vec3_length(_v0);
-  var isX = _v0.x !== 0;
-  var direction = isX ? 'x' : 'z';
+  var isX = !!_v0.x;
 
   var deckHeight = 12;
+  var capWidth = 24;
   var capHeight = 8;
 
-  var pierWidth = 24;
+  var pierWidth = 12;
   var pierHeight = height - deckHeight - capHeight;
+  var pierDepth = 32;
   var pierSpacing = 128;
   var pierCount = Math.floor(length / pierSpacing) - 1;
 
@@ -39,13 +40,10 @@ export var bridge_create = (start, end, height = start.y) => {
   var piers = [...Array(pierCount)].flatMap((_, index) => {
     var offset = pierSpacing * (index + 1);
 
-    var cap = compose(
-      relativeAlign('py', deck, 'ny'),
-      $scale({ py: { [direction]: 2 } }),
-    )(
+    var cap = compose(relativeAlign('py', deck, 'ny'))(
       isX
-        ? boxGeom_create(pierWidth, capHeight, width)
-        : boxGeom_create(width, capHeight, pierWidth),
+        ? boxGeom_create(capWidth, capHeight, width)
+        : boxGeom_create(width, capHeight, capWidth),
     );
 
     var pier = compose(
@@ -53,8 +51,8 @@ export var bridge_create = (start, end, height = start.y) => {
       colors({ py: [1, 1, 1], ny: [0, 0, 0] }),
     )(
       isX
-        ? boxGeom_create(pierWidth, pierHeight, width)
-        : boxGeom_create(width, pierHeight, pierWidth),
+        ? boxGeom_create(pierWidth, pierHeight, pierDepth)
+        : boxGeom_create(pierDepth, pierHeight, pierWidth),
     );
 
     return [cap, pier].map(
