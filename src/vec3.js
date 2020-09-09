@@ -253,6 +253,10 @@ export var vec3_setFromMatrixPosition = (v, m) => {
   return v;
 };
 
+export var vec3_equals = (a, b) => {
+  return a.x === b.x && a.y === b.y && a.z === b.z;
+};
+
 export var vec3_fromArray = (v, array) => {
   v.x = array[0];
   v.y = array[1];
