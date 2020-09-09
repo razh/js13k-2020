@@ -133,7 +133,7 @@ export var mac_create = () => {
 };
 
 export var text_create = string => {
-  var scale = 1.5;
+  var charScale = 1.5;
   var charWidth = 3;
   var charSpacing = 0.8;
   var charHeight = 5;
@@ -183,15 +183,15 @@ export var text_create = string => {
           compose(
             align('nx_py'),
             translate(
-              scale *
-                (xt +
-                  charWidth * (index - string.length / 2) +
-                  charSpacing * (index - 1)),
-              scale * (charHeight - yt),
+              xt +
+                charWidth * (index - string.length / 2) +
+                charSpacing * (index - 1),
+              charHeight - yt,
               0,
             ),
+            scale(charScale, charScale, 1),
             merge,
-          )(boxGeom_create(scale * x, scale * y, 1)),
+          )(boxGeom_create(x, y, 1)),
         );
       })
       .filter(Boolean),

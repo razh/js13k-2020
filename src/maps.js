@@ -158,8 +158,8 @@ export var map0 = (gl, scene, camera) => {
     var frontTextMesh = text_create(text);
     var backTextMesh = text_create(text);
     vec3_set(backTextMesh.scale, -1, 1, -1);
-    vec3_set(frontTextMesh.position, 0, 12, 1);
-    vec3_set(backTextMesh.position, 0, 12, -1);
+    vec3_set(frontTextMesh.position, 0, 16, 1);
+    vec3_set(backTextMesh.position, 0, 16, -1);
     object3d_add(mesh, frontTextMesh);
     object3d_add(mesh, backTextMesh);
     createShadow(mesh);
