@@ -41,6 +41,8 @@ import { selection_create } from './selection.js';
 import { shadowMesh_create } from './shadowMesh.js';
 import { compose, sample } from './utils.js';
 import {
+  vec3_add,
+  vec3_addVectors,
   vec3_applyQuaternion,
   vec3_create,
   vec3_cross,
@@ -60,12 +62,13 @@ var DEBUG = true;
 var keys = keys_create();
 
 var CELL_SIZE = 32;
-var SHADOW_BIAS = 0.1;
 
 var _q0 = quat_create();
 var _r0 = ray_create();
 var _v0 = vec3_create();
 var _v1 = vec3_create();
+
+var cameraDelta = vec3_create(0, 128, 128);
 
 var worldToGrid = vector => vec3_round(vec3_divideScalar(vector, CELL_SIZE));
 var gridToWorld = vector => vec3_multiplyScalar(vector, CELL_SIZE);
@@ -90,7 +93,7 @@ export var map0 = (gl, scene, camera) => {
   object3d_add(cameraObject, camera);
   object3d_add(map, cameraObject);
 
-  vec3_set(camera.position, 0, 128, 128);
+  vec3_add(camera.position, cameraDelta);
   camera_lookAt(camera, vec3_create());
 
   // Action
@@ -114,7 +117,6 @@ export var map0 = (gl, scene, camera) => {
 
   var createShadow = mesh => {
     var shadowMesh = shadowMesh_create(mesh);
-    shadowMesh.position.y = SHADOW_BIAS;
     shadowMesh.light = light0;
     mesh.shadow = shadowMesh;
   };
@@ -253,7 +255,7 @@ export var map0 = (gl, scene, camera) => {
       player_update(player);
 
       if (DEBUG) {
-        Object.assign(cameraObject.position, playerMesh.position);
+        vec3_addVectors(camera.position, playerMesh.position, cameraDelta);
       }
 
       if (player.command.forward || player.command.right) {
@@ -269,9 +271,7 @@ export var map0 = (gl, scene, camera) => {
         .map(body => body.parent);
 
       [...fileMeshes, playerMesh].map(
-        mesh =>
-          (mesh.shadow.position.y =
-            (traceShadow(mesh)?.point.y || 0) + SHADOW_BIAS),
+        mesh => (mesh.shadow.position.y = traceShadow(mesh)?.point.y || 0),
       );
 
       Object.assign(selectionMesh.position, playerMesh.position);
