@@ -1,8 +1,11 @@
 import { randFloatSpread } from './math.js';
 
-var AudioContext = window.AudioContext || window.webkitAudioContext;
+var Context =
+  AudioContext ||
+  // eslint-disable-next-line no-undef
+  webkitAudioContext;
 
-var audioContext = new AudioContext();
+var audioContext = new Context();
 var { sampleRate } = audioContext;
 
 // A4 is 69.

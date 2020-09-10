@@ -205,10 +205,8 @@ var animate = () => {
 };
 
 var setSize = (width, height) => {
-  var { devicePixelRatio = 1 } = window;
-
-  canvas.width = width * devicePixelRatio;
-  canvas.height = height * devicePixelRatio;
+  canvas.width = width * (devicePixelRatio || 1);
+  canvas.height = height * (devicePixelRatio || 1);
   canvas.style.width = `${width}px`;
   canvas.style.height = `${height}px`;
   gl.viewport(0, 0, canvas.width, canvas.height);
@@ -217,11 +215,11 @@ var setSize = (width, height) => {
   camera_updateProjectionMatrix(camera);
 };
 
-setSize(window.innerWidth, window.innerHeight);
+setSize(innerWidth, innerHeight);
 animate();
 
-window.addEventListener('resize', () => {
-  setSize(window.innerWidth, window.innerHeight);
+addEventListener('resize', () => {
+  setSize(innerWidth, innerHeight);
   render();
 });
 
