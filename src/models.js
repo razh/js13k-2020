@@ -1,7 +1,25 @@
 import { colors } from './boxColors.js';
 import { boxGeom_create } from './boxGeom.js';
-import { all, nx_py, ny, nz, py, py_nz, pz } from './boxIndices.js';
-import { $scale, $translateY, align, relativeAlign } from './boxTransforms.js';
+import {
+  all,
+  nx_nz,
+  nx_py,
+  nx_pz,
+  ny,
+  nz,
+  px_nz,
+  px_pz,
+  py,
+  py_nz,
+  pz,
+} from './boxIndices.js';
+import {
+  $scale,
+  $translate,
+  $translateY,
+  align,
+  relativeAlign,
+} from './boxTransforms.js';
 import { clone, geom_create, merge, scale, translate } from './geom.js';
 import { material_create } from './material.js';
 import { mesh_create } from './mesh.js';
@@ -73,6 +91,27 @@ export var bridge_create = (start, end, height = start.y) => {
       material,
     );
   });
+};
+
+export var controlPoint_create = () => {
+  var size = 72;
+  var height = 8;
+
+  var geometry = compose(
+    align(ny),
+    $translate(
+      [nx_nz, { x: size / 2 }],
+      [px_nz, { z: size / 2 }],
+      [px_pz, { x: -size / 2 }],
+      [nx_pz, { z: -size / 2 }],
+    ),
+    $scale([py, [0.75, 1, 0.75]]),
+  )(boxGeom_create(size, height, size));
+
+  var material = material_create();
+  vec3_setScalar(material.color, 0.3);
+
+  return mesh_create(geometry, material);
 };
 
 export var file_create = color => {

@@ -12,6 +12,7 @@ import { randFloat } from './math.js';
 import { mesh_create } from './mesh.js';
 import {
   bridge_create,
+  controlPoint_create,
   file_create,
   mac_create,
   text_create,
@@ -168,6 +169,13 @@ export var map0 = (gl, scene, camera) => {
     return mesh;
   });
 
+  // TODO: Shrink controlPoint boundingBox.
+  var controlPointMesh = physics_add(controlPoint_create(), BODY_STATIC);
+  createShadow(controlPointMesh);
+  vec3_set(controlPointMesh.position, 64, 0, 0);
+  object3d_add(map, controlPointMesh);
+
+  // Bridges
   [
     [
       [-992, 96, -64],
@@ -182,8 +190,8 @@ export var map0 = (gl, scene, camera) => {
       [-96, 128, 512],
     ],
   ]
-    .flatMap(([start, end]) =>
-      bridge_create(vec3_create(...start), vec3_create(...end)),
+    .flatMap(([start, end, height]) =>
+      bridge_create(vec3_create(...start), vec3_create(...end), height),
     )
     .map(mesh => {
       var physicsMesh = physics_add(mesh, BODY_STATIC);
