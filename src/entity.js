@@ -1,5 +1,5 @@
 export var component_create = options => {
-  let update = () => {};
+  var update = () => {};
 
   if (typeof options === 'function') {
     update = options;
