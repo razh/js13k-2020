@@ -38,7 +38,7 @@ export var bridge_create = (start, end, height = start.y) => {
   vec3_subVectors(_v0, start, end);
   var width = 64;
   var length = vec3_length(_v0);
-  var isX = !!_v0.x;
+  var isX = _v0.x;
 
   var deckHeight = 12;
   var capWidth = 24;
@@ -48,7 +48,7 @@ export var bridge_create = (start, end, height = start.y) => {
   var pierHeight = height - deckHeight - capHeight;
   var pierDepth = 32;
   var pierSpacing = 128;
-  var pierCount = Math.floor(length / pierSpacing) - 1;
+  var pierCount = ((length / pierSpacing) | 0) - 1;
 
   var deck = align(py)(
     isX

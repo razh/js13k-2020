@@ -11,5 +11,5 @@ export var remove = (array, element) => {
 };
 
 export var sample = array => {
-  return array[Math.floor(Math.random() * array.length)];
+  return array[(Math.random() * array.length) | 0];
 };
