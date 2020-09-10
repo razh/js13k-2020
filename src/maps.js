@@ -1,3 +1,5 @@
+import './audio.js';
+
 import { colors } from './boxColors.js';
 import { boxGeom_create } from './boxGeom.js';
 import { ny, py } from './boxIndices.js';
