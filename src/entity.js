@@ -13,16 +13,9 @@ export var component_create = options => {
   };
 };
 
-export var entity_add = (entity, ...components) => {
-  components.map(component => {
-    if (entity_has(entity, component)) {
-      return;
-    }
-
-    component.parent = entity;
-    entity.components.push(component);
-  });
-
+export var entity_add = (entity, component) => {
+  component.parent = entity;
+  entity.components.push(component);
   return entity;
 };
 
@@ -38,16 +31,14 @@ export var entity_filter = (entity, predicate) => {
   return entity.components.filter(predicate);
 };
 
-export var entity_remove = (entity, ...components) => {
-  components.map(component => {
-    var index = entity.components.indexOf(component);
+export var entity_remove = (entity, component) => {
+  var index = entity.components.indexOf(component);
 
-    if (index >= 0) {
-      entity.components
-        .splice(index, 1)
-        .map(component => (component.parent = undefined));
-    }
-  });
+  if (index >= 0) {
+    entity.components
+      .splice(index, 1)
+      .map(component => (component.parent = undefined));
+  }
 };
 
 export var entity_update = (entity, ...args) => {
