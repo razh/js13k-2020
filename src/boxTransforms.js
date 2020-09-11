@@ -6,6 +6,7 @@ import {
   vec3_divideScalar,
   vec3_fromArray,
   vec3_multiply,
+  vec3_set,
   vec3_setScalar,
   vec3_setX,
   vec3_setY,
@@ -13,10 +14,15 @@ import {
   vec3_subVectors,
 } from './vec3.js';
 
+var _vector = vec3_create();
+
+var centroidA = vec3_create();
+var centroidB = vec3_create();
+
 // Color#set().
 export var setVector = (vector, value, identity) => {
   if (Array.isArray(value)) {
-    vec3_fromArray(vector, value);
+    vec3_set(vector, ...value);
   } else if (typeof value === 'object') {
     Object.assign(vector, identity, value);
   } else if (typeof value === 'number') {
@@ -24,7 +30,7 @@ export var setVector = (vector, value, identity) => {
   }
 };
 
-var computeCentroid = (geom, indices, vector = vec3_create()) => {
+var computeCentroid = (geom, indices, vector) => {
   vec3_setScalar(vector, 0);
 
   indices.map(index => vec3_add(vector, geom.vertices[index]));
@@ -33,69 +39,51 @@ var computeCentroid = (geom, indices, vector = vec3_create()) => {
   return vector;
 };
 
-var alignBoxVertices = (() => {
-  var centroid = vec3_create();
+var alignBoxVertices = (geom, indices) => {
+  computeCentroid(geom, indices, _vector);
+  return geom_translate(geom, -_vector.x, -_vector.y, -_vector.z);
+};
 
-  return (geom, indices) => {
-    computeCentroid(geom, indices, centroid);
-    return geom_translate(geom, -centroid.x, -centroid.y, -centroid.z);
-  };
-})();
+var relativeAlignBoxVertices = (geomA, indicesA, geomB, indicesB) => {
+  computeCentroid(geomA, indicesA, centroidA);
+  computeCentroid(geomB, indicesB, centroidB);
 
-var relativeAlignBoxVertices = (() => {
-  var centroidA = vec3_create();
-  var centroidB = vec3_create();
-  var delta = vec3_create();
-
-  return (geomA, indicesA, geomB, indicesB) => {
-    computeCentroid(geomA, indicesA, centroidA);
-    computeCentroid(geomB, indicesB, centroidB);
-
-    vec3_subVectors(delta, centroidB, centroidA);
-    return geom_translate(geomA, delta.x, delta.y, delta.z);
-  };
-})();
+  vec3_subVectors(_vector, centroidA, centroidB);
+  return geom_translate(geomA, -_vector.x, -_vector.y, -_vector.z);
+};
 
 export var align = rearg(alignBoxVertices);
 export var relativeAlign = rearg(relativeAlignBoxVertices);
 
-var transformBoxVertices = (() => {
-  var vector = vec3_create();
+var transformBoxVertices = (method, identity = vec3_create()) => {
+  return (geom, ...vectors) => {
+    vectors.map(([indices, delta]) => {
+      setVector(_vector, delta, identity);
+      indices.map(index => method(geom.vertices[index], _vector));
+    });
 
-  return (method, identity = vec3_create()) => {
-    return (geom, ...vectors) => {
-      vectors.map(([indices, delta]) => {
-        setVector(vector, delta, identity);
-        indices.map(index => method(geom.vertices[index], vector));
-      });
-
-      return geom;
-    };
+    return geom;
   };
-})();
+};
 
 export var $translate = rearg(transformBoxVertices(vec3_add));
 export var $scale = rearg(
   transformBoxVertices(vec3_multiply, vec3_create(1, 1, 1)),
 );
 
-var transformAxisBoxVertices = (() => {
-  var vector = vec3_create();
+var transformAxisBoxVertices = (method, identity = vec3_create()) => {
+  return axis => {
+    return (geom, ...vectors) => {
+      vectors.map(([indices, delta = identity[axis]]) => {
+        Object.assign(_vector, identity);
+        _vector[axis] = delta;
+        indices.map(index => method(geom.vertices[index], _vector));
+      });
 
-  return (method, identity = vec3_create()) => {
-    return axis => {
-      return (geom, ...vectors) => {
-        vectors.map(([indices, delta = identity[axis]]) => {
-          Object.assign(vector, identity);
-          vector[axis] = delta;
-          indices.map(index => method(geom.vertices[index], vector));
-        });
-
-        return geom;
-      };
+      return geom;
     };
   };
-})();
+};
 
 var translateAxisBoxVertices = transformAxisBoxVertices(vec3_add);
 
