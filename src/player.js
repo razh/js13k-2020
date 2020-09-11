@@ -1,3 +1,4 @@
+import { playJump } from './audio.js';
 import {
   box3_copy,
   box3_create,
@@ -366,6 +367,7 @@ var player_checkJump = player => {
   player.movementFlags |= PMF_JUMP_HELD;
 
   player.body.velocity.y = JUMP_VELOCITY;
+  playJump();
 
   return true;
 };
