@@ -170,11 +170,17 @@ export var map0 = (gl, scene, camera) => {
     return mesh;
   });
 
-  var controlPointMesh = physics_add(controlPoint_create(), BODY_STATIC);
-  controlPointMesh.geometry = controlPointGeom_create();
-  createShadow(controlPointMesh);
-  vec3_set(controlPointMesh.position, 64, 0, 0);
-  object3d_add(map, controlPointMesh);
+  var controlPointMeshes = [
+    [64, 0, 0],
+    [0, 0, 256],
+  ].map(position => {
+    var mesh = physics_add(controlPoint_create(), BODY_STATIC);
+    mesh.geometry = controlPointGeom_create();
+    createShadow(mesh);
+    vec3_set(mesh.position, ...position);
+    object3d_add(map, mesh);
+    return mesh;
+  });
 
   // Bridges
   [
@@ -312,6 +318,7 @@ export var map0 = (gl, scene, camera) => {
       selectionMesh.visible = true;
       // Snap to nearest file if no current selection.
       var nearestFileMesh;
+      var nearestControlPointMesh;
       if (
         !selectedMesh &&
         (nearestFileMesh = findNearestObject(
@@ -322,8 +329,25 @@ export var map0 = (gl, scene, camera) => {
           CELL_SIZE
       ) {
         Object.assign(selectionMesh.position, nearestFileMesh.position);
-      } else {
-        // Find nearest reachable ground.
+      }
+
+      // Snap to nearest control point if selection exists.
+      else if (
+        selectedMesh &&
+        (nearestControlPointMesh = findNearestObject(
+          playerMesh.position,
+          controlPointMeshes,
+        )) &&
+        vec3_distanceTo(playerMesh.position, nearestControlPointMesh.position) <
+          CELL_SIZE
+      ) {
+        Object.assign(selectionMesh.position, nearestControlPointMesh.position);
+        // Trace down to control point mesh.
+        selectionMesh.position.y = traceGround(selectionMesh)?.point.y || 0;
+      }
+
+      // Find nearest reachable ground.
+      else {
         selectionMesh.position.y = traceGround(selectionMesh)?.point.y || 0;
         selectionMesh.visible =
           vec3_distanceTo(selectionMesh.position, playerMesh.position) <
