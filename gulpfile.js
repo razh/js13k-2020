@@ -19,6 +19,36 @@ const SPACES_AROUND_OPERATORS_REGEX = new RegExp(
 const clean = () => del(['build', 'dist']);
 
 // https://github.com/mrdoob/three.js/blob/dev/utils/build/rollup.config.js
+function glConstants() {
+  const constants = {
+    TRIANGLES: 4,
+    DEPTH_BUFFER_BIT: 256,
+    CULL_FACE: 2884,
+    DEPTH_TEST: 2929,
+    FLOAT: 5126,
+    COLOR_BUFFER_BIT: 16384,
+    ARRAY_BUFFER: 34962,
+    STATIC_DRAW: 35044,
+    VERTEX_SHADER: 35633,
+    FRAGMENT_SHADER: 35632,
+    ACTIVE_UNIFORMS: 35718,
+    ACTIVE_ATTRIBUTES: 35721,
+  };
+
+  return {
+    transform(code) {
+      return {
+        code: code.replace(/gl\.([A-Z0-9_]+)/g, (match, name) => {
+          if (constants[name]) return constants[name];
+          console.log('* Unhandled GL Constant:', name);
+          return match;
+        }),
+        map: null,
+      };
+    },
+  };
+}
+
 function glsl() {
   function minify(code) {
     return (
@@ -81,7 +111,7 @@ function glsl() {
 function bundle() {
   return rollup({
     input: 'src/index.js',
-    plugins: [glsl()],
+    plugins: [glConstants(), glsl()],
   })
     .then(bundle =>
       bundle.write({
