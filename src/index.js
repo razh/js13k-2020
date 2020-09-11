@@ -92,18 +92,11 @@ var update = () => {
 var bufferGeomBuffers = new WeakMap();
 
 var setFloat32AttributeBuffer = (name, location, bufferGeom, size) => {
-  var buffers = bufferGeomBuffers.get(bufferGeom);
+  var buffers = bufferGeomBuffers.get(bufferGeom) || {};
+  bufferGeomBuffers.set(bufferGeom, buffers);
 
-  if (!buffers) {
-    buffers = {};
-    bufferGeomBuffers.set(bufferGeom, buffers);
-  }
-
-  var buffer = buffers[name];
-  if (!buffer) {
-    buffer = createFloat32Buffer(gl, bufferGeom.attrs[name]);
-    buffers[name] = buffer;
-  }
+  var buffer = buffers[name] || createFloat32Buffer(gl, bufferGeom.attrs[name]);
+  buffers[name] = buffer;
 
   setFloat32Attribute(gl, location, buffer, size);
 };
@@ -131,11 +124,10 @@ var renderMesh = mesh => {
   setMat4Uniform(gl, uniforms.modelViewMatrix, mesh.modelViewMatrix);
   setMat4Uniform(gl, uniforms.projectionMatrix, camera.projectionMatrix);
 
-  var bufferGeom = bufferGeoms.get(geometry);
-  if (!bufferGeom) {
-    bufferGeom = bufferGeom_fromGeom(bufferGeom_create(), geometry);
-    bufferGeoms.set(geometry, bufferGeom);
-  }
+  var bufferGeom =
+    bufferGeoms.get(geometry) ||
+    bufferGeom_fromGeom(bufferGeom_create(), geometry);
+  bufferGeoms.set(geometry, bufferGeom);
 
   setFloat32AttributeBuffer('position', attributes.position, bufferGeom, 3);
   setFloat32AttributeBuffer('color', attributes.color, bufferGeom, 3);
