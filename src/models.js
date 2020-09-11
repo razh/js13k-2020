@@ -20,14 +20,19 @@ import {
   align,
   relativeAlign,
 } from './boxTransforms.js';
+import { component_create, entity_add } from './entity.js';
 import { clone, geom_create, merge, scale, translate } from './geom.js';
 import { material_create } from './material.js';
 import { mesh_create } from './mesh.js';
+import { object3d_add, object3d_create } from './object3d.js';
 import { compose } from './utils.js';
 import {
   vec3_addScaledVector,
+  vec3_clone,
   vec3_create,
+  vec3_distanceTo,
   vec3_length,
+  vec3_multiplyScalar,
   vec3_setScalar,
   vec3_subVectors,
 } from './vec3.js';
@@ -106,18 +111,21 @@ export var controlPoint_create = () => {
   return mesh_create(geometry, material);
 };
 
+var rotate45 = size =>
+  $translate(
+    [nx_nz, { x: size / 2 }],
+    [px_nz, { z: size / 2 }],
+    [px_pz, { x: -size / 2 }],
+    [nx_pz, { z: -size / 2 }],
+  );
+
 export var controlPointGeom_create = () => {
   var size = 72;
   var height = 8;
 
   return compose(
     align(ny),
-    $translate(
-      [nx_nz, { x: size / 2 }],
-      [px_nz, { z: size / 2 }],
-      [px_pz, { x: -size / 2 }],
-      [nx_pz, { z: -size / 2 }],
-    ),
+    rotate45(size),
     $scale([py, [0.75, 1, 0.75]]),
   )(boxGeom_create(size, height, size));
 };
@@ -249,4 +257,56 @@ export var text_create = string => {
   vec3_setScalar(material.color, 0.2);
 
   return mesh_create(geometry, material);
+};
+
+export var trail_create = player => {
+  var trails = object3d_create();
+  var trailSize = 24;
+
+  var geometry = compose(
+    align(ny),
+    rotate45(trailSize),
+    $scale([py, 0.5]),
+  )(boxGeom_create(trailSize, trailSize / 2, trailSize));
+
+  var material = material_create();
+  vec3_setScalar(material.emissive, 0.5);
+
+  var meshes = [...Array(8)].map(() => {
+    var mesh = mesh_create(geometry, material);
+    object3d_add(trails, mesh);
+    mesh.visible = false;
+    return mesh;
+  });
+
+  var prevPosition = vec3_clone(player.object.position);
+  var trailDistance = 48;
+  var decay = 4;
+
+  return entity_add(
+    trails,
+    component_create((component, dt) => {
+      if (
+        player.walking &&
+        vec3_distanceTo(player.object.position, prevPosition) > trailDistance
+      ) {
+        var mesh = meshes.find(mesh => !mesh.visible);
+        if (mesh) {
+          vec3_setScalar(mesh.scale, 1);
+          Object.assign(prevPosition, player.object.position);
+          Object.assign(mesh.position, prevPosition);
+          mesh.visible = true;
+        }
+      }
+
+      meshes.map(mesh => {
+        if (mesh.visible) {
+          vec3_multiplyScalar(mesh.scale, 1 - decay * dt);
+          if (vec3_length(mesh.scale) < 0.01) {
+            mesh.visible = false;
+          }
+        }
+      });
+    }),
+  );
 };

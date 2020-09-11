@@ -18,6 +18,7 @@ import {
   file_create,
   mac_create,
   text_create,
+  trail_create,
 } from './models.js';
 import {
   object3d_add,
@@ -134,6 +135,8 @@ export var map0 = (gl, scene, camera) => {
   playerPhysics.update = () => {};
   var player = player_create(playerMesh, playerPhysics);
   player.scene = map;
+
+  object3d_add(map, trail_create(player));
 
   var groundMesh = physics_add(
     mesh_create(align(py)(boxGeom_create(2048, 64, 2048)), material_create()),
