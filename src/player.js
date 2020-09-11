@@ -69,7 +69,6 @@ export var player_create = (object, body) => {
     // walk movement
     movementFlags: 0,
     walking: false,
-    groundPlane: false,
   };
 };
 
@@ -179,7 +178,7 @@ var player_slideMove = (() => {
       Object.assign(endVelocity, player.body.velocity);
       endVelocity.y -= player.gravity * player.dt;
       player.body.velocity.y = (player.body.velocity.y + endVelocity.y) * 0.5;
-      if (player.groundPlane) {
+      if (player.walking) {
         // slide along the ground plane
         pm_clipVelocity(
           player.body.velocity,
@@ -192,7 +191,7 @@ var player_slideMove = (() => {
     var time_left = player.dt;
 
     // never turn against the ground plane
-    if (player.groundPlane) {
+    if (player.walking) {
       numplanes = 1;
       Object.assign(planes[0], player_groundTrace_normal);
     } else {
@@ -361,7 +360,6 @@ var player_checkJump = player => {
     return false;
   }
 
-  player.groundPlane = false;
   player.walking = false;
   player.movementFlags |= PMF_JUMP_HELD;
 
@@ -456,7 +454,7 @@ var player_airMove = (() => {
     // we may have a ground plane that is very steep, even
     // though we don't have a groundentity
     // slide along the steep plane
-    if (player.groundPlane) {
+    if (player.walking) {
       pm_clipVelocity(
         player.body.velocity,
         player_groundTrace_normal,
@@ -554,12 +552,10 @@ var player_checkGround = (() => {
     player_trace(player, trace, player.object.position, position);
     // if the trace didn't hit anything, we are in free fall
     if (trace.fraction === 1) {
-      player.groundPlane = false;
       player.walking = false;
       return;
     }
 
-    player.groundPlane = true;
     player.walking = true;
   };
 })();
