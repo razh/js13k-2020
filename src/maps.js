@@ -1,3 +1,4 @@
+import { playPickup } from './audio.js';
 import { colors } from './boxColors.js';
 import { boxGeom_create } from './boxGeom.js';
 import { ny, py } from './boxIndices.js';
@@ -379,6 +380,7 @@ export var map0 = (gl, scene, camera) => {
           object3d_add(playerMesh, selectedMesh);
           vec3_set(selectedMesh.position, 16, 24, 16);
           vec3_setScalar(selectedMesh.scale, 0.5);
+          playPickup();
         }
       }
     }

@@ -84,6 +84,9 @@ var scale = (fn, n) => f => {
 var slide = (fn, slide) => f => (t, i, a) =>
   fn(f + (i / a.length) * slide)(t, i, a);
 
+var pitchJump = (fn, pitchJump, pitchJumpTime) => f => (t, i, a) =>
+  fn(f + (t > pitchJumpTime ? pitchJump : 0))(t, i, a);
+
 var adsr = (attack, decay, sustain, release, sustainVolume) => {
   var length = attack + decay + sustain + release;
 
@@ -120,9 +123,28 @@ export var playJump = () => {
   );
 };
 
+export var playPickup = () => {
+  playSound(
+    generateNotes(
+      mul(
+        pitchJump(sin, toFreq(83) - toFreq(76), 0.07),
+        adsr(0.001, 0.1, 0.1, 0.3, 0.5),
+      ),
+      0.6,
+      0.3,
+    )[76],
+  );
+};
+
 document.addEventListener('keydown', event => {
   if (event.key === '/') {
-    playSound(generateNotes(sin, 0.4, 0.3)[69]);
+    playPickup();
+  }
+
+  if (event.key === ',') {
+    playSound(
+      generateNotes(pitchJump(sin, toFreq(76) - toFreq(69), 0.2), 0.4, 0.3)[69],
+    );
     setTimeout(() => playSound(generateNotes(sin, 0.4, 0.3)[76]), 300);
   }
 });
