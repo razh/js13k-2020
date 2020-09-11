@@ -111,6 +111,12 @@ export var map0 = (gl, scene, camera) => {
   var directional = [light0];
   directional.map(light => object3d_add(map, light));
 
+  var createShadow = mesh => {
+    var shadowMesh = shadowMesh_create(mesh);
+    shadowMesh.light = light0;
+    mesh.shadow = shadowMesh;
+  };
+
   // Camera
   var cameraObject = object3d_create();
   object3d_add(cameraObject, camera);
@@ -121,6 +127,7 @@ export var map0 = (gl, scene, camera) => {
 
   // Action
   var playerMesh = physics_add(mac_create(), BODY_DYNAMIC);
+  createShadow(playerMesh);
   object3d_add(map, playerMesh);
 
   var playerPhysics = get_physics_component(playerMesh);
@@ -128,23 +135,12 @@ export var map0 = (gl, scene, camera) => {
   var player = player_create(playerMesh, playerPhysics);
   player.scene = map;
 
-  var alignTop = align(py);
-  var alignBottom = align(ny);
-
   var groundMesh = physics_add(
-    mesh_create(alignTop(boxGeom_create(2048, 64, 2048)), material_create()),
+    mesh_create(align(py)(boxGeom_create(2048, 64, 2048)), material_create()),
     BODY_STATIC,
   );
   Object.assign(groundMesh.material.color, color_CYAN);
   object3d_add(map, groundMesh);
-
-  var createShadow = mesh => {
-    var shadowMesh = shadowMesh_create(mesh);
-    shadowMesh.light = light0;
-    mesh.shadow = shadowMesh;
-  };
-
-  createShadow(playerMesh);
 
   var selectionMesh = selection_create();
   object3d_add(map, selectionMesh);
@@ -207,7 +203,7 @@ export var map0 = (gl, scene, camera) => {
       object3d_add(map, physicsMesh);
     });
 
-  var createBlock = ([dimensions, position, transform = alignBottom]) => {
+  var createBlock = ([dimensions, position, transform = align(ny)]) => {
     var mesh = physics_add(
       mesh_create(transform(boxGeom_create(...dimensions)), material_create()),
       BODY_STATIC,
@@ -219,7 +215,7 @@ export var map0 = (gl, scene, camera) => {
   };
 
   var blockTransform = compose(
-    alignBottom,
+    align(ny),
     colors([py, color_YELLOW], [ny, color_CYAN]),
     geom =>
       $scale([py, { x: randFloat(0.8, 0.9), z: randFloat(0.8, 0.9) }])(geom),
