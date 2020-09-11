@@ -15,6 +15,7 @@ import { mesh_create } from './mesh.js';
 import {
   bridge_create,
   controlPoint_create,
+  controlPointGeom_create,
   file_create,
   mac_create,
   text_create,
@@ -171,8 +172,8 @@ export var map0 = (gl, scene, camera) => {
     return mesh;
   });
 
-  // TODO: Shrink controlPoint boundingBox.
   var controlPointMesh = physics_add(controlPoint_create(), BODY_STATIC);
+  controlPointMesh.geometry = controlPointGeom_create();
   createShadow(controlPointMesh);
   vec3_set(controlPointMesh.position, 64, 0, 0);
   object3d_add(map, controlPointMesh);
