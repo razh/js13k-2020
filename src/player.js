@@ -57,7 +57,6 @@ export var player_create = (object, body) => {
       forward: 0,
       right: 0,
       up: 0,
-      hook: 0,
     },
 
     // run-time variables
