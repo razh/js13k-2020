@@ -10,12 +10,35 @@
     body {
       margin: 0;
       background: rgba(20%, 10%, 30%);
+      color: #fff;
+      font-family: Futura, sans-serif;
       overflow: hidden;
+    }
+
+    @keyframes f {
+      100% {
+        opacity: 0;
+      }
+    }
+
+    h1 {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      margin: 0;
+      text-align: center;
+      font-size: 4rem;
+      font-style: italic;
+      border-top: 0.5rem solid;
+      border-bottom: 0.5rem solid;
+      animation: f 2s 2s forwards;
     }
   </style>
 </head>
 <body>
   <canvas id="canvas"></canvas>
+  <h1>Another Day<br>at the<br>Website Factory</h1>
   <script type="module" src="./src/index.js"></script>
 </body>
 </html>
