@@ -3,7 +3,7 @@ import { colors } from './boxColors.js';
 import { ny, py } from './boxIndices.js';
 import { $scale, align } from './boxTransforms.js';
 import { camera_lookAt } from './camera.js';
-import { color_CYAN, color_ORANGE, color_YELLOW } from './constants.js';
+import { color_CYAN, color_ORANGE, color_YELLOW, DEBUG } from './constants.js';
 import { light_create } from './directionalLight.js';
 import { component_create, entity_add } from './entity.js';
 import { interval_create } from './interval.js';
@@ -73,8 +73,6 @@ import {
   vec3_Y,
   vec3_Z,
 } from './vec3.js';
-
-var DEBUG = true;
 
 var keys = keys_create();
 
@@ -327,9 +325,7 @@ export var map0 = (gl, scene, camera) => {
 
       player_update(player);
 
-      if (DEBUG) {
-        vec3_addVectors(camera.position, playerMesh.position, cameraDelta);
-      }
+      vec3_addVectors(camera.position, playerMesh.position, cameraDelta);
 
       if (player.command.z || player.command.x) {
         wishForward = Math.sign(player.command.z);

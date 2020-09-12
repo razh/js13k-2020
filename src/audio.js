@@ -1,3 +1,4 @@
+import { DEBUG } from './constants.js';
 import { randFloatSpread } from './math.js';
 
 var Context =
@@ -143,12 +144,23 @@ export var playShoot = () =>
     )[76],
   );
 
-addEventListener('keydown', event => {
-  if (event.key === '/') {
-    playPickup();
-  }
+export var playDrop = () =>
+  playSound(
+    generateNotes(mul(sin, adsr(0.01, 0.01, 0.05, 0.05, 1)), 0.2, 0.1)[48],
+  );
 
-  if (event.key === ',') {
-    playShoot();
-  }
-});
+if (DEBUG) {
+  addEventListener('keydown', event => {
+    if (event.key === '/') {
+      playPickup();
+    }
+
+    if (event.key === ',') {
+      playShoot();
+    }
+
+    if (event.key === 'm') {
+      playDrop();
+    }
+  });
+}
