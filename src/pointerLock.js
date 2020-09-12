@@ -6,10 +6,9 @@ export var pointerLock_create = (controls, element) => {
     return;
   }
 
-  var onPointerLockChange = () => {
+  document.addEventListener('pointerlockchange', () => {
     controls.enabled = element === document.pointerLockElement;
-  };
+  });
 
-  document.addEventListener('pointerlockchange', onPointerLockChange);
-  document.addEventListener('click', () => element.requestPointerLock());
+  addEventListener('click', () => element.requestPointerLock());
 };

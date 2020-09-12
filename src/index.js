@@ -213,7 +213,7 @@ addEventListener('resize', () => {
   render();
 });
 
-document.addEventListener('keypress', event => {
+addEventListener('keypress', event => {
   // Pause/play.
   if (event.code === 'KeyP') {
     running = !running;
@@ -225,7 +225,7 @@ document.addEventListener('keypress', event => {
   }
 });
 
-document.addEventListener('click', () => {
+addEventListener('click', () => {
   if (!running) {
     running = true;
     animate();

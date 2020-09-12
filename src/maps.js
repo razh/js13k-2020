@@ -358,7 +358,7 @@ export var map0 = (gl, scene, camera) => {
     }),
   );
 
-  document.addEventListener('keydown', event => {
+  addEventListener('keydown', event => {
     if (event.code === 'KeyE') {
       if (selectedMesh) {
         object3d_remove(playerMesh, selectedMesh);

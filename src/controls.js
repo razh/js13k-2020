@@ -31,11 +31,10 @@ export var controls_create = object => {
     },
   };
 
-  document.addEventListener('mousemove', controls.onMouseMove);
+  addEventListener('mousemove', controls.onMouseMove);
 
   return controls;
 };
 
-export var controls_dispose = controls => {
-  document.removeEventListener('mousemove', controls.onMouseMove);
-};
+export var controls_dispose = controls =>
+  removeEventListener('mousemove', controls.onMouseMove);

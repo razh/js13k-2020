@@ -111,7 +111,7 @@ var adsr = (attack, decay, sustain, release, sustainVolume) => {
   };
 };
 
-document.addEventListener('click', () => audioContext.resume(), { once: true });
+addEventListener('click', () => audioContext.resume(), { once: true });
 
 export var playJump = () => {
   playSound(
@@ -136,7 +136,7 @@ export var playPickup = () => {
   );
 };
 
-document.addEventListener('keydown', event => {
+addEventListener('keydown', event => {
   if (event.key === '/') {
     playPickup();
   }
