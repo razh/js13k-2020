@@ -22,6 +22,7 @@ import {
   selection_create,
   text_create,
   trail_create,
+  window_create,
 } from './models.js';
 import {
   object3d_add,
@@ -243,6 +244,16 @@ export var map0 = (gl, scene, camera) => {
     [[96, 32, 128], [-256, 0, -160], blockTransform],
     [[128, 32, 64], [0, 0, 128], blockTransform],
   ].map(createBlock);
+
+  [
+    [window_create(true), [0, 96, 0]],
+    [window_create(false), [64, 96, 0]],
+  ].map(([geometry, position]) => {
+    var mesh = mesh_create(geometry, material_create());
+    vec3_set(mesh.position, ...position);
+    object3d_add(map, mesh);
+    return mesh;
+  });
 
   var wishForward = 0;
   var wishRight = 0;

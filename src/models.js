@@ -2,12 +2,14 @@ import { colors } from './boxColors.js';
 import { boxGeom_create } from './boxGeom.js';
 import {
   all,
+  nx_ny,
   nx_ny_nz,
   nx_ny_pz,
   nx_nz,
   nx_py,
   nx_pz,
   ny,
+  ny_nz,
   nz,
   px_ny_nz,
   px_ny_pz,
@@ -349,5 +351,30 @@ export var trail_create = player => {
         }
       });
     }),
+  );
+};
+
+export var window_create = isX => {
+  var width = 24;
+  var height = 32;
+  var depth = 1;
+
+  var sillHeight = 2;
+  var sillDepth = 2;
+
+  var center = box(
+    isX ? [width, height, depth] : [depth, height, width],
+    colors([all, 0]),
+  );
+
+  return mergeAll(
+    center,
+    box(
+      isX ? [width, sillHeight, sillDepth] : [sillDepth, sillHeight, width],
+      isX
+        ? relativeAlign(py_nz, center, ny_nz)
+        : relativeAlign(nx_py, center, nx_ny),
+      colors([all, 1.5]),
+    ),
   );
 };
