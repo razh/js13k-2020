@@ -98,6 +98,8 @@ export var bridge_create = (start, end, height = start.y) => {
   });
 };
 
+export var bulletGeometry = boxGeom_create(4, 4, 12);
+
 export var controlPoint_create = () => {
   var size = 32;
   var height = 8;

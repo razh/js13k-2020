@@ -1,6 +1,5 @@
 import { playPickup, playShoot } from './audio.js';
 import { colors } from './boxColors.js';
-import { boxGeom_create } from './boxGeom.js';
 import { ny, py } from './boxIndices.js';
 import { $scale, align } from './boxTransforms.js';
 import { camera_lookAt } from './camera.js';
@@ -15,6 +14,7 @@ import { mesh_create } from './mesh.js';
 import {
   box,
   bridge_create,
+  bulletGeometry,
   controlPoint_create,
   controlPointGeom_create,
   file_create,
@@ -386,10 +386,7 @@ export var map0 = (gl, scene, camera) => {
 
         var time = 0;
         var bullet = entity_add(
-          physics_add(
-            mesh_create(boxGeom_create(4, 4, 12), bulletMaterial),
-            BODY_BULLET,
-          ),
+          physics_add(mesh_create(bulletGeometry, bulletMaterial), BODY_BULLET),
           component_create((component, dt) => {
             time += dt;
             if (time > 4) {
