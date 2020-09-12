@@ -472,6 +472,35 @@ export var map0 = (gl, scene, camera) => {
     }
   });
 
+  if (DEBUG) {
+    addEventListener('click', () => {
+      Object.assign(_r0.origin, camera.position);
+      vec3_applyQuaternion(
+        vec3_set(_r0.direction, 0, 0, -1),
+        camera.quaternion,
+      );
+      if (groundMeshes) {
+        var intersection = ray_intersectObjects(_r0, groundMeshes)?.[0];
+        if (intersection) {
+          console.log(
+            [
+              intersection.point.x,
+              intersection.point.y,
+              intersection.point.z,
+            ].map(Math.round),
+            { distance: Math.round(intersection.distance) },
+          );
+          var targetMaterial = material_create();
+          vec3_set(targetMaterial.emissive, 0, 1, 0);
+          var target = mesh_create(box([2, 2, 2]), targetMaterial);
+          Object.assign(target.position, intersection.point);
+          object3d_add(map, target);
+          setTimeout(() => object3d_remove(map, target), 1000);
+        }
+      }
+    });
+  }
+
   return {
     ambient,
     directional,
