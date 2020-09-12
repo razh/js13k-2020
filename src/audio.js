@@ -113,7 +113,7 @@ var adsr = (attack, decay, sustain, release, sustainVolume) => {
 
 addEventListener('click', () => audioContext.resume(), { once: true });
 
-export var playJump = () => {
+export var playJump = () =>
   playSound(
     generateNotes(
       mul(slide(sin, toFreq(76) - toFreq(69)), adsr(0.001, 0.1, 0.02, 0.27, 1)),
@@ -121,9 +121,8 @@ export var playJump = () => {
       0.3,
     )[69],
   );
-};
 
-export var playPickup = () => {
+export var playPickup = () =>
   playSound(
     generateNotes(
       mul(
@@ -134,7 +133,15 @@ export var playPickup = () => {
       0.3,
     )[76],
   );
-};
+
+export var playShoot = () =>
+  playSound(
+    generateNotes(
+      mul(slide(sin, -300), adsr(0.01, 0.01, 0.1, 0.5, 1)),
+      0.6,
+      0.2,
+    )[76],
+  );
 
 addEventListener('keydown', event => {
   if (event.key === '/') {
@@ -142,9 +149,6 @@ addEventListener('keydown', event => {
   }
 
   if (event.key === ',') {
-    playSound(
-      generateNotes(pitchJump(sin, toFreq(76) - toFreq(69), 0.2), 0.4, 0.3)[69],
-    );
-    setTimeout(() => playSound(generateNotes(sin, 0.4, 0.3)[76]), 300);
+    playShoot();
   }
 });

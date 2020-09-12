@@ -1,4 +1,4 @@
-import { playPickup } from './audio.js';
+import { playPickup, playShoot } from './audio.js';
 import { colors } from './boxColors.js';
 import { boxGeom_create } from './boxGeom.js';
 import { ny, py } from './boxIndices.js';
@@ -7,6 +7,7 @@ import { camera_lookAt } from './camera.js';
 import { color_CYAN, color_ORANGE, color_YELLOW } from './constants.js';
 import { light_create } from './directionalLight.js';
 import { component_create, entity_add } from './entity.js';
+import { interval_create } from './interval.js';
 import { keys_create } from './keys.js';
 import { material_create } from './material.js';
 import { randFloat } from './math.js';
@@ -68,6 +69,7 @@ import {
 var DEBUG = true;
 
 var keys = keys_create();
+var isMouseDown = false;
 
 var CELL_SIZE = 32;
 
@@ -251,6 +253,8 @@ export var map0 = (gl, scene, camera) => {
     return ray_intersectObjects(_r0, groundMeshes)?.[0];
   };
 
+  var bulletInterval = interval_create(0.2);
+
   entity_add(
     map,
     component_create((component, dt) => {
@@ -355,6 +359,11 @@ export var map0 = (gl, scene, camera) => {
       }
 
       fileMeshes.map(mesh => object3d_rotateY(mesh, dt));
+
+      if (bulletInterval(dt) && isMouseDown) {
+        bulletInterval.reset();
+        playShoot();
+      }
     }),
   );
 
@@ -383,7 +392,16 @@ export var map0 = (gl, scene, camera) => {
         }
       }
     }
+
+    if (DEBUG) {
+      if (event.code === 'Period') {
+        console.log(playerMesh.position);
+      }
+    }
   });
+
+  addEventListener('mousedown', () => (isMouseDown = true));
+  addEventListener('mouseup', () => (isMouseDown = false));
 
   return {
     ambient,
