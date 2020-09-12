@@ -39,16 +39,13 @@ export var box3_expandByPoint = (box, point) => {
 
 export var box3_expandByObject = (box, object) => {
   object3d_updateWorldMatrix(object);
-  object3d_traverse(object, node => {
-    var { geometry } = node;
-    if (geometry) {
-      geometry.vertices.map(vertex => {
-        Object.assign(_vector, vertex);
-        vec3_applyMatrix4(_vector, node.matrixWorld);
-        box3_expandByPoint(box, _vector);
-      });
-    }
-  });
+  object3d_traverse(object, node =>
+    node.geometry?.vertices.map(vertex => {
+      Object.assign(_vector, vertex);
+      vec3_applyMatrix4(_vector, node.matrixWorld);
+      box3_expandByPoint(box, _vector);
+    }),
+  );
   return box;
 };
 
