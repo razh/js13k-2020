@@ -25,10 +25,6 @@ import {
   vec3_Y,
 } from './vec3.js';
 
-// bg_public.h
-// movement flags
-var PMF_JUMP_HELD = 2;
-
 // bg_local.h
 var JUMP_VELOCITY = 270;
 
@@ -67,7 +63,7 @@ export var player_create = (object, body) => {
     viewRight: vec3_create(),
 
     // walk movement
-    flags: 0,
+    jump: 0,
     walking: false,
   };
 };
@@ -75,7 +71,7 @@ export var player_create = (object, body) => {
 export var player_update = player => {
   if (player.command.up < 10) {
     // not holding jump
-    player.flags &= ~PMF_JUMP_HELD;
+    player.jump = false;
   }
 
   player_checkGround(player);
@@ -356,13 +352,13 @@ var player_checkJump = player => {
   }
 
   // must wait for jump to be released
-  if (player.flags & PMF_JUMP_HELD) {
+  if (player.jump) {
     player.command.up = 0;
     return false;
   }
 
   player.walking = false;
-  player.flags |= PMF_JUMP_HELD;
+  player.jump = true;
 
   player.body.velocity.y = JUMP_VELOCITY;
   playJump();
