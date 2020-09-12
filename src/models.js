@@ -2,11 +2,15 @@ import { colors } from './boxColors.js';
 import { boxGeom_create } from './boxGeom.js';
 import {
   all,
+  nx_ny_nz,
+  nx_ny_pz,
   nx_nz,
   nx_py,
   nx_pz,
   ny,
   nz,
+  px_ny_nz,
+  px_ny_pz,
   px_nz,
   px_pz,
   py,
@@ -188,6 +192,38 @@ export var mac_create = () => {
   var material = material_create();
   vec3_setScalar(material.color, 1.5);
   material.shininess = 0;
+
+  return mesh_create(geometry, material);
+};
+
+export var selection_create = () => {
+  var size = 32;
+  var height = 2;
+  var segmentWidth = 12;
+  var segmentDepth = 2;
+
+  var segmentWidthGeometry = box([segmentWidth, height, segmentDepth]);
+  var segmentDepthGeometry = box([segmentDepth, height, segmentWidth]);
+
+  var geometry = mergeAll(
+    ...[
+      [px_ny_pz, 1, 1],
+      [px_ny_nz, 1, -1],
+      [nx_ny_nz, -1, -1],
+      [nx_ny_pz, -1, 1],
+    ].flatMap(([alignment, x, z]) =>
+      [segmentWidthGeometry, segmentDepthGeometry].map(
+        compose(
+          clone(),
+          align(alignment),
+          translate((x * size) / 2, 0, (z * size) / 2),
+        ),
+      ),
+    ),
+  );
+
+  var material = material_create();
+  vec3_setScalar(material.emissive, 1);
 
   return mesh_create(geometry, material);
 };

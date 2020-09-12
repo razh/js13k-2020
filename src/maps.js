@@ -19,6 +19,7 @@ import {
   controlPointGeom_create,
   file_create,
   mac_create,
+  selection_create,
   text_create,
   trail_create,
 } from './models.js';
@@ -46,7 +47,6 @@ import {
   quat_setFromAxisAngle,
 } from './quat.js';
 import { ray_create, ray_intersectObjects } from './ray.js';
-import { selection_create } from './selection.js';
 import { shadowMesh_create } from './shadowMesh.js';
 import { compose, sample } from './utils.js';
 import {
