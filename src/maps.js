@@ -10,7 +10,7 @@ import { component_create, entity_add } from './entity.js';
 import { interval_create } from './interval.js';
 import { keys_create } from './keys.js';
 import { material_create } from './material.js';
-import { randFloat } from './math.js';
+import { randFloat, randFloatSpread } from './math.js';
 import { mesh_create } from './mesh.js';
 import {
   bridge_create,
@@ -24,11 +24,13 @@ import {
 import {
   object3d_add,
   object3d_create,
+  object3d_lookAt,
   object3d_remove,
   object3d_rotateY,
   object3d_updateWorldMatrix,
 } from './object3d.js';
 import {
+  BODY_BULLET,
   BODY_DYNAMIC,
   BODY_STATIC,
   get_physics_component,
@@ -48,6 +50,7 @@ import { shadowMesh_create } from './shadowMesh.js';
 import { compose, sample } from './utils.js';
 import {
   vec3_add,
+  vec3_addScaledVector,
   vec3_addVectors,
   vec3_applyQuaternion,
   vec3_create,
@@ -64,12 +67,12 @@ import {
   vec3_setScalar,
   vec3_subVectors,
   vec3_Y,
+  vec3_Z,
 } from './vec3.js';
 
 var DEBUG = true;
 
 var keys = keys_create();
-var isMouseDown = false;
 
 var CELL_SIZE = 32;
 
@@ -330,7 +333,7 @@ export var map0 = (gl, scene, camera) => {
           fileMeshes,
         )) &&
         vec3_distanceTo(playerMesh.position, nearestFileMesh.position) <
-          CELL_SIZE
+          Math.SQRT2 * CELL_SIZE
       ) {
         Object.assign(selectionMesh.position, nearestFileMesh.position);
       }
@@ -343,7 +346,7 @@ export var map0 = (gl, scene, camera) => {
           controlPointMeshes,
         )) &&
         vec3_distanceTo(playerMesh.position, nearestControlPointMesh.position) <
-          CELL_SIZE
+          Math.SQRT2 * CELL_SIZE
       ) {
         Object.assign(selectionMesh.position, nearestControlPointMesh.position);
         // Trace down to control point mesh.
@@ -360,9 +363,48 @@ export var map0 = (gl, scene, camera) => {
 
       fileMeshes.map(mesh => object3d_rotateY(mesh, dt));
 
-      if (bulletInterval(dt) && isMouseDown) {
+      if (bulletInterval(dt) && !selectedMesh && keys.Enter) {
         bulletInterval.reset();
         playShoot();
+
+        var bulletMaterial = material_create();
+        vec3_set(bulletMaterial.emissive, 1, 1, 0.5);
+
+        var time = 0;
+        var bullet = entity_add(
+          physics_add(
+            mesh_create(boxGeom_create(4, 4, 12), bulletMaterial),
+            BODY_BULLET,
+          ),
+          component_create((component, dt) => {
+            time += dt;
+            if (time > 4) {
+              object3d_remove(map, bullet);
+            }
+          }),
+        );
+        var bulletPhysics = get_physics_component(bullet);
+        vec3_applyQuaternion(Object.assign(_v1, vec3_Z), playerMesh.quaternion);
+        // Bullets land in box of size 1 that is 16 units away.
+        vec3_addScaledVector(
+          vec3_set(
+            _v0,
+            randFloatSpread(1),
+            randFloatSpread(1),
+            randFloatSpread(1),
+          ),
+          _v1,
+          16,
+        );
+        object3d_lookAt(bullet, _v0);
+        vec3_applyQuaternion(Object.assign(_v0, vec3_Z), bullet.quaternion);
+        Object.assign(bullet.position, playerMesh.position);
+        bullet.position.y += 16;
+        vec3_addScaledVector(bullet.position, _v0, 16);
+        vec3_addScaledVector(bulletPhysics.velocity, _v0, 1200);
+        object3d_add(map, bullet);
+
+        bulletPhysics.collide = () => object3d_remove(map, bullet);
       }
     }),
   );
@@ -399,9 +441,6 @@ export var map0 = (gl, scene, camera) => {
       }
     }
   });
-
-  addEventListener('mousedown', () => (isMouseDown = true));
-  addEventListener('mouseup', () => (isMouseDown = false));
 
   return {
     ambient,
