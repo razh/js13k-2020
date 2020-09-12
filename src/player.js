@@ -49,11 +49,7 @@ export var player_create = (object, body) => {
     scene: undefined,
 
     // player input
-    command: {
-      forward: 0,
-      right: 0,
-      up: 0,
-    },
+    command: vec3_create(),
 
     // run-time variables
     dt: 0,
@@ -69,7 +65,7 @@ export var player_create = (object, body) => {
 };
 
 export var player_update = player => {
-  if (player.command.up < 10) {
+  if (player.command.y < 10) {
     // not holding jump
     player.jump = false;
   }
@@ -346,14 +342,14 @@ var player_slideMove = (() => {
 })();
 
 var player_checkJump = player => {
-  if (player.command.up < 10) {
+  if (player.command.y < 10) {
     // not holding jump
     return false;
   }
 
   // must wait for jump to be released
   if (player.jump) {
-    player.command.up = 0;
+    player.command.y = 0;
     return false;
   }
 
@@ -378,8 +374,8 @@ var player_walkMove = (() => {
 
     player_friction(player);
 
-    var fmove = player.command.forward;
-    var smove = player.command.right;
+    var fmove = player.command.z;
+    var smove = player.command.x;
 
     var scale = player_cmdScale(player);
 
@@ -424,8 +420,8 @@ var player_airMove = (() => {
   return player => {
     player_friction(player);
 
-    var fmove = player.command.forward;
-    var smove = player.command.right;
+    var fmove = player.command.z;
+    var smove = player.command.x;
 
     var scale = player_cmdScale(player);
 
@@ -501,24 +497,17 @@ var player_friction = (() => {
 })();
 
 var player_cmdScale = player => {
-  var max = Math.abs(player.command.forward);
-  if (Math.abs(player.command.right) > max) {
-    max = Math.abs(player.command.right);
-  }
-
-  if (Math.abs(player.command.up) > max) {
-    max = Math.abs(player.command.up);
-  }
+  var max = Math.max(
+    Math.abs(player.command.x),
+    Math.abs(player.command.y),
+    Math.abs(player.command.z),
+  );
 
   if (!max) {
     return 0;
   }
 
-  var total = Math.sqrt(
-    player.command.forward ** 2 +
-      player.command.right ** 2 +
-      player.command.up ** 2,
-  );
+  var total = vec3_length(player.command);
   var scale = (player.speed * max) / (127 * total);
 
   return scale;

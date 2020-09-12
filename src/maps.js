@@ -274,20 +274,16 @@ export var map0 = (gl, scene, camera) => {
 
       player.dt = dt;
 
-      player.command.forward = 0;
-      player.command.right = 0;
-      player.command.up = 0;
+      vec3_setScalar(player.command, 0);
 
-      if (keys.KeyW || keys.ArrowUp) player.command.forward++;
-      if (keys.KeyS || keys.ArrowDown) player.command.forward--;
-      if (keys.KeyA || keys.ArrowLeft) player.command.right--;
-      if (keys.KeyD || keys.ArrowRight) player.command.right++;
-      if (keys.Space) player.command.up++;
+      if (keys.KeyW || keys.ArrowUp) player.command.z++;
+      if (keys.KeyS || keys.ArrowDown) player.command.z--;
+      if (keys.KeyA || keys.ArrowLeft) player.command.x--;
+      if (keys.KeyD || keys.ArrowRight) player.command.x++;
+      if (keys.Space) player.command.y++;
 
       var movespeed = 127;
-      player.command.forward *= movespeed;
-      player.command.right *= movespeed;
-      player.command.up *= movespeed;
+      vec3_multiplyScalar(player.command, movespeed);
 
       vec3_set(player.viewForward, 0, 0, -1);
       vec3_set(player.viewRight, 1, 0, 0);
@@ -308,9 +304,9 @@ export var map0 = (gl, scene, camera) => {
         vec3_addVectors(camera.position, playerMesh.position, cameraDelta);
       }
 
-      if (player.command.forward || player.command.right) {
-        wishForward = Math.sign(player.command.forward);
-        wishRight = Math.sign(player.command.right);
+      if (player.command.z || player.command.x) {
+        wishForward = Math.sign(player.command.z);
+        wishRight = Math.sign(player.command.x);
 
         quat_setFromAxisAngle(_q0, vec3_Y, Math.atan2(wishRight, -wishForward));
         quat_rotateTowards(playerMesh.quaternion, _q0, 12 * dt);
