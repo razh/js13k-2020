@@ -145,6 +145,7 @@ function html() {
         minifyCSS: true,
         removeAttributeQuotes: true,
         removeComments: true,
+        removeOptionalTags: true,
       }),
     )
     .pipe($.replace('./src/index.js', './bundle.js'))
