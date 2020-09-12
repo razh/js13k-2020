@@ -187,6 +187,13 @@ export var map0 = (gl, scene, camera) => {
     return mesh;
   });
 
+  var findFileAt = mesh => {
+    worldToGrid(Object.assign(_v0, mesh.position));
+    return fileMeshes.find(fileMesh =>
+      vec3_equals(_v0, worldToGrid(Object.assign(_v1, fileMesh.position))),
+    );
+  };
+
   // Bridges
   [
     [
@@ -361,6 +368,12 @@ export var map0 = (gl, scene, camera) => {
           2 * CELL_SIZE;
       }
 
+      // Prevent multiple files at the same position.
+      if (selectedMesh) {
+        selectionMesh.visible =
+          selectionMesh.visible && !findFileAt(selectionMesh);
+      }
+
       fileMeshes.map(mesh => object3d_rotateY(mesh, dt));
 
       if (bulletInterval(dt) && !selectedMesh && keys.Enter) {
@@ -411,26 +424,22 @@ export var map0 = (gl, scene, camera) => {
 
   addEventListener('keydown', event => {
     if (event.code === 'KeyE') {
-      if (selectedMesh) {
-        object3d_remove(playerMesh, selectedMesh);
-        object3d_add(map, selectedMesh);
-        Object.assign(selectedMesh.position, selectionMesh.position);
-        vec3_setScalar(selectedMesh.scale, 1);
-        selectedMesh = undefined;
-      } else if (selectionMesh.visible) {
-        Object.assign(_v0, selectionMesh.position);
-        worldToGrid(_v0);
-        selectedMesh = fileMeshes.find(mesh => {
-          Object.assign(_v1, mesh.position);
-          worldToGrid(_v1);
-          return vec3_equals(_v0, _v1);
-        });
+      if (selectionMesh.visible) {
         if (selectedMesh) {
-          object3d_remove(map, selectedMesh);
-          object3d_add(playerMesh, selectedMesh);
-          vec3_set(selectedMesh.position, 16, 24, 16);
-          vec3_setScalar(selectedMesh.scale, 0.5);
-          playPickup();
+          object3d_remove(playerMesh, selectedMesh);
+          object3d_add(map, selectedMesh);
+          Object.assign(selectedMesh.position, selectionMesh.position);
+          vec3_setScalar(selectedMesh.scale, 1);
+          selectedMesh = undefined;
+        } else {
+          selectedMesh = findFileAt(selectionMesh);
+          if (selectedMesh) {
+            object3d_remove(map, selectedMesh);
+            object3d_add(playerMesh, selectedMesh);
+            vec3_set(selectedMesh.position, 16, 24, 16);
+            vec3_setScalar(selectedMesh.scale, 0.5);
+            playPickup();
+          }
         }
       }
     }
