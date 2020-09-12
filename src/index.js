@@ -1,6 +1,6 @@
 /* global canvas */
 
-import { bufferGeom_create, bufferGeom_fromGeom } from './bufferGeom.js';
+import { bufferGeom_fromGeom } from './bufferGeom.js';
 import { camera_create, camera_updateProjectionMatrix } from './camera.js';
 import { controls_create } from './controls.js';
 import { entity_update } from './entity.js';
@@ -95,7 +95,7 @@ var setFloat32AttributeBuffer = (name, location, bufferGeom, size) => {
   var buffers = bufferGeomBuffers.get(bufferGeom) || {};
   bufferGeomBuffers.set(bufferGeom, buffers);
 
-  var buffer = buffers[name] || createFloat32Buffer(gl, bufferGeom.attrs[name]);
+  var buffer = buffers[name] || createFloat32Buffer(gl, bufferGeom[name]);
   buffers[name] = buffer;
 
   setFloat32Attribute(gl, location, buffer, size);
@@ -124,15 +124,13 @@ var renderMesh = mesh => {
   setMat4Uniform(gl, uniforms.modelViewMatrix, mesh.modelViewMatrix);
   setMat4Uniform(gl, uniforms.projectionMatrix, camera.projectionMatrix);
 
-  var bufferGeom =
-    bufferGeoms.get(geometry) ||
-    bufferGeom_fromGeom(bufferGeom_create(), geometry);
+  var bufferGeom = bufferGeoms.get(geometry) || bufferGeom_fromGeom(geometry);
   bufferGeoms.set(geometry, bufferGeom);
 
   setFloat32AttributeBuffer('position', attributes.position, bufferGeom, 3);
   setFloat32AttributeBuffer('color', attributes.color, bufferGeom, 3);
 
-  gl.drawArrays(gl.TRIANGLES, 0, bufferGeom.attrs.position.length / 3);
+  gl.drawArrays(gl.TRIANGLES, 0, bufferGeom.position.length / 3);
 };
 
 var lightDirection = vec3_create();
