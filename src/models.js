@@ -42,6 +42,8 @@ var _v0 = vec3_create();
 export var box = (dimensions, ...transforms) =>
   compose(...transforms)(boxGeom_create(...dimensions));
 
+export var mergeAll = (...geoms) => compose(...geoms.map(merge))(geom_create());
+
 export var bridge_create = (start, end, height = start.y) => {
   vec3_subVectors(_v0, start, end);
   var width = 64;
@@ -175,15 +177,13 @@ export var mac_create = () => {
     relativeAlign(nz, screen, pz),
   );
 
-  var geometry = compose(
-    ...[
-      base,
-      body,
-      screen,
-      compose(clone(), translate(-4, 2, 0))(eye),
-      compose(clone(), translate(4, 2, 0))(eye),
-    ].map(merge),
-  )(geom_create());
+  var geometry = mergeAll(
+    base,
+    body,
+    screen,
+    compose(clone(), translate(-4, 2, 0))(eye),
+    compose(clone(), translate(4, 2, 0))(eye),
+  );
 
   var material = material_create();
   vec3_setScalar(material.color, 1.5);
@@ -198,7 +198,7 @@ export var text_create = string => {
   var charSpacing = 0.8;
   var charHeight = 5;
 
-  var geometry = compose(
+  var geometry = mergeAll(
     ...string
       .split('')
       .flatMap((char, index) => {
@@ -251,12 +251,11 @@ export var text_create = string => {
               0,
             ),
             scale(charScale, charScale, 1),
-            merge,
           ),
         );
       })
       .filter(Boolean),
-  )(geom_create());
+  );
 
   var material = material_create();
   vec3_setScalar(material.color, 0.2);
