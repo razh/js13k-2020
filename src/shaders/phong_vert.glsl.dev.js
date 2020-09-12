@@ -15,7 +15,7 @@ varying vec3 fogPosition;
 void main() {
   vColor.xyz = color.xyz;
 
-  vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+  vec4 mvPosition = modelViewMatrix * vec4(position, 1);
 
   gl_Position = projectionMatrix * mvPosition;
   vViewPosition = -mvPosition.xyz;

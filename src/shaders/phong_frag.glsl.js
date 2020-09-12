@@ -31,8 +31,8 @@ uniform D directionalLights[NUM_DIR_LIGHTS];
 varying vec3 vViewPosition;
 
 void main() {
-  vec3 dD = vec3(0.0);
-  vec3 dS = vec3(0.0);
+  vec3 dD = vec3(0);
+  vec3 dS = vec3(0);
 
   vec3 c = diffuse * vColor;
 
@@ -58,7 +58,7 @@ void main() {
       fogColor,
       smoothstep(fogNear, fogFar, length(fogPosition))
     ),
-    1.0
+    1
   );
 }
 `.trim();
