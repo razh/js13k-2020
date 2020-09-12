@@ -39,6 +39,9 @@ import {
 
 var _v0 = vec3_create();
 
+export var box = (dimensions, ...transforms) =>
+  compose(...transforms)(boxGeom_create(...dimensions));
+
 export var bridge_create = (start, end, height = start.y) => {
   vec3_subVectors(_v0, start, end);
   var width = 64;
@@ -55,28 +58,25 @@ export var bridge_create = (start, end, height = start.y) => {
   var pierSpacing = 128;
   var pierCount = ((length / pierSpacing) | 0) - 1;
 
-  var deck = align(py)(
-    isX
-      ? boxGeom_create(length, deckHeight, width)
-      : boxGeom_create(width, deckHeight, length),
+  var deck = box(
+    isX ? [length, deckHeight, width] : [width, deckHeight, length],
+    align(py),
   );
 
   var piers = [...Array(pierCount)].flatMap((_, index) => {
     var offset = pierSpacing * (index + 1);
 
-    var cap = compose(relativeAlign(py, deck, ny))(
-      isX
-        ? boxGeom_create(capWidth, capHeight, width)
-        : boxGeom_create(width, capHeight, capWidth),
+    var cap = box(
+      isX ? [capWidth, capHeight, width] : [width, capHeight, capWidth],
+      relativeAlign(py, deck, ny),
     );
 
-    var pier = compose(
+    var pier = box(
+      isX
+        ? [pierWidth, pierHeight, pierDepth]
+        : [pierDepth, pierHeight, pierWidth],
       relativeAlign(py, cap, ny),
       colors([py, 1], [ny, 0]),
-    )(
-      isX
-        ? boxGeom_create(pierWidth, pierHeight, pierDepth)
-        : boxGeom_create(pierDepth, pierHeight, pierWidth),
     );
 
     return [cap, pier].map(
@@ -103,7 +103,7 @@ export var controlPoint_create = () => {
   var height = 8;
 
   // Geometry used for bounding box.
-  var geometry = align(ny)(boxGeom_create(size, height, size));
+  var geometry = box([size, height, size], align(ny));
 
   var material = material_create();
   vec3_setScalar(material.color, 0.3);
@@ -123,11 +123,12 @@ export var controlPointGeom_create = () => {
   var size = 72;
   var height = 8;
 
-  return compose(
+  return box(
+    [size, height, size],
     align(ny),
     rotate45(size),
     $scale([py, [0.75, 1, 0.75]]),
-  )(boxGeom_create(size, height, size));
+  );
 };
 
 export var file_create = color => {
@@ -135,10 +136,7 @@ export var file_create = color => {
   Object.assign(material.color, color);
   vec3_addScaledVector(material.emissive, color, 0.1);
 
-  return mesh_create(
-    compose(align(ny), translate(0, 4, 0))(boxGeom_create(28, 32, 2)),
-    material,
-  );
+  return mesh_create(box([28, 32, 2], align(ny), translate(0, 4, 0)), material);
 };
 
 export var mac_create = () => {
@@ -149,27 +147,31 @@ export var mac_create = () => {
   var bodyHeight = height - baseHeight;
   var backScale = { x: 0.8 };
 
-  var base = compose(
+  var base = box(
+    [size, baseHeight, size],
     align(ny),
     $scale([ny, [baseSize / size, 1, baseSize / size]], [nz, backScale]),
-  )(boxGeom_create(size, baseHeight, size));
+  );
 
-  var body = compose(
+  var body = box(
+    [size, bodyHeight, size],
     $scale([nz, backScale]),
     relativeAlign(ny, base, py),
     $translateY([py_nz, -6]),
-  )(boxGeom_create(size, bodyHeight, size));
+  );
 
-  var screen = compose(
+  var screen = box(
+    [size, bodyHeight, 0.5],
     colors([all, [0.1, 0.2, 0.2]]),
     scale(0.8, 0.8, 1),
     relativeAlign(nz, body, pz),
-  )(boxGeom_create(size, bodyHeight, 0.5));
+  );
 
-  var eye = compose(
+  var eye = box(
+    [3, 8, 0.5],
     colors([all, [1, 256, 2]]),
     relativeAlign(nz, screen, pz),
-  )(boxGeom_create(3, 8, 0.5));
+  );
 
   var geometry = compose(
     ...[
@@ -236,7 +238,8 @@ export var text_create = string => {
         }[char];
 
         return parameters?.map(([x, y, xt = 0, yt = 0]) =>
-          compose(
+          box(
+            [x, y, 1],
             align(nx_py),
             translate(
               xt +
@@ -247,7 +250,7 @@ export var text_create = string => {
             ),
             scale(charScale, charScale, 1),
             merge,
-          )(boxGeom_create(x, y, 1)),
+          ),
         );
       })
       .filter(Boolean),
@@ -263,11 +266,12 @@ export var trail_create = player => {
   var trails = object3d_create();
   var trailSize = 24;
 
-  var geometry = compose(
+  var geometry = box(
+    [trailSize, trailSize / 2, trailSize],
     align(ny),
     rotate45(trailSize),
     $scale([py, 0.5]),
-  )(boxGeom_create(trailSize, trailSize / 2, trailSize));
+  );
 
   var material = material_create();
   vec3_setScalar(material.emissive, 0.5);

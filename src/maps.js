@@ -13,6 +13,7 @@ import { material_create } from './material.js';
 import { randFloat, randFloatSpread } from './math.js';
 import { mesh_create } from './mesh.js';
 import {
+  box,
   bridge_create,
   controlPoint_create,
   controlPointGeom_create,
@@ -144,7 +145,7 @@ export var map0 = (gl, scene, camera) => {
   object3d_add(map, trail_create(player));
 
   var groundMesh = physics_add(
-    mesh_create(align(py)(boxGeom_create(2048, 64, 2048)), material_create()),
+    mesh_create(box([2048, 64, 2048], align(py)), material_create()),
     BODY_STATIC,
   );
   Object.assign(groundMesh.material.color, color_CYAN);
@@ -220,7 +221,7 @@ export var map0 = (gl, scene, camera) => {
 
   var createBlock = ([dimensions, position, transform = align(ny)]) => {
     var mesh = physics_add(
-      mesh_create(transform(boxGeom_create(...dimensions)), material_create()),
+      mesh_create(box(dimensions, transform), material_create()),
       BODY_STATIC,
     );
     vec3_set(mesh.position, ...position);
