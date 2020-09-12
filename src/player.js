@@ -67,7 +67,7 @@ export var player_create = (object, body) => {
     viewRight: vec3_create(),
 
     // walk movement
-    movementFlags: 0,
+    flags: 0,
     walking: false,
   };
 };
@@ -75,7 +75,7 @@ export var player_create = (object, body) => {
 export var player_update = player => {
   if (player.command.up < 10) {
     // not holding jump
-    player.movementFlags &= ~PMF_JUMP_HELD;
+    player.flags &= ~PMF_JUMP_HELD;
   }
 
   player_checkGround(player);
@@ -355,13 +355,14 @@ var player_checkJump = player => {
     return false;
   }
 
-  if (player.movementFlags & PMF_JUMP_HELD) {
+  // must wait for jump to be released
+  if (player.flags & PMF_JUMP_HELD) {
     player.command.up = 0;
     return false;
   }
 
   player.walking = false;
-  player.movementFlags |= PMF_JUMP_HELD;
+  player.flags |= PMF_JUMP_HELD;
 
   player.body.velocity.y = JUMP_VELOCITY;
   playJump();
