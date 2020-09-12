@@ -1,5 +1,8 @@
 export var compose = (...fns) =>
-  fns.reduceRight((f, g) => (...args) => f(g(...args)));
+  fns.reduceRight(
+    (f, g) => (...args) => f(g(...args)),
+    _ => _,
+  );
 
 export var rearg = fn => (...args) => value => fn(value, ...args);
 
