@@ -50,6 +50,11 @@ export var box = (dimensions, ...transforms) =>
 
 export var mergeAll = (...geoms) => compose(...geoms.map(merge))(geom_create());
 
+export var spaceBetween = (start, end, count) => {
+  var spacing = (end - start) / (count + 1);
+  return [...Array(count)].map((_, index) => start + spacing * (index + 1));
+};
+
 export var bridge_create = (start, end, height = start.y) => {
   vec3_subVectors(_v0, start, end);
   var width = 64;
@@ -105,6 +110,27 @@ export var bridge_create = (start, end, height = start.y) => {
     );
   });
 };
+
+export var building0_create = () => {
+  /*
+  ┌───┬─┐
+  │   ├─┘
+  └───┘
+  */
+
+  var _256_256 = [256, 256, 256];
+  var _256_128 = [256, 128, 256];
+  var _128_256 = [128, 256, 128];
+  var _128_128 = [128, 128, 128];
+  var _128_64 = [128, 64, 128];
+  var a = box(_256_128, align(ny));
+  return compose(
+    ...[a, box(_128_64, relativeAlign(ny_nz, a, py_nz))].map(merge),
+  )(geom_create());
+};
+
+export var building1_create = () => {};
+export var building2_create = () => {};
 
 export var bulletGeometry = boxGeom_create(4, 4, 12);
 

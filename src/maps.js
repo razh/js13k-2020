@@ -14,12 +14,14 @@ import { mesh_create } from './mesh.js';
 import {
   box,
   bridge_create,
+  building0_create,
   bulletGeometry,
   controlPoint_create,
   controlPointGeom_create,
   file_create,
   mac_create,
   selection_create,
+  spaceBetween,
   text_create,
   trail_create,
   window_create,
@@ -243,11 +245,25 @@ export var map0 = (gl, scene, camera) => {
     [[128, 32, 128], [0, 0, -256], blockTransform],
     [[96, 32, 128], [-256, 0, -160], blockTransform],
     [[128, 32, 64], [0, 0, 128], blockTransform],
+    [[128, 32, 64], [-256, 0, 192], blockTransform],
   ].map(createBlock);
 
+  [building0_create()].map(geometry => {
+    var mesh = physics_add(
+      mesh_create(geometry, material_create()),
+      BODY_STATIC,
+    );
+    vec3_set(mesh.position, 384, 0, 0);
+    createShadow(mesh);
+    object3d_add(map, mesh);
+    return mesh;
+  });
+
   [
-    [window_create(true), [0, 96, 0]],
     [window_create(false), [64, 96, 0]],
+    ...spaceBetween(0, 128, 2).flatMap(y =>
+      spaceBetween(256, 512, 3).map(x => [window_create(true), [x, y, 128]]),
+    ),
   ].map(([geometry, position]) => {
     var mesh = mesh_create(geometry, material_create());
     vec3_set(mesh.position, ...position);
