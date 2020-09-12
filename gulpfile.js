@@ -37,14 +37,11 @@ function glConstants() {
 
   return {
     transform(code) {
-      return {
-        code: code.replace(/gl\.([A-Z0-9_]+)/g, (match, name) => {
-          if (constants[name]) return constants[name];
-          console.log('* Unhandled GL Constant:', name);
-          return match;
-        }),
-        map: null,
-      };
+      return code.replace(/gl\.([A-Z0-9_]+)/g, (match, name) => {
+        if (constants[name]) return constants[name];
+        console.log('* Unhandled GL Constant:', name);
+        return match;
+      });
     },
   };
 }
@@ -100,10 +97,7 @@ function glsl() {
       const endIndex = code.lastIndexOf('`');
       const glslString = code.slice(startIndex + 1, endIndex - 1).trim();
 
-      return {
-        code: `${prefix}\`${minify(glslString)}\``,
-        map: { mappings: '' },
-      };
+      return `${prefix}\`${minify(glslString)}\``;
     },
   };
 }
