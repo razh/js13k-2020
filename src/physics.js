@@ -32,15 +32,17 @@ export var BODY_DYNAMIC = 2;
 export var BODY_BULLET = 4;
 
 export var physics_create = (entity, physics) => {
-  return component_create({
-    physics,
-    boundingBox: box3_setFromObject(box3_create(), entity),
-    velocity: vec3_create(),
-    update(component, dt) {
+  return component_create(
+    (component, dt) => {
       vec3_addScaledVector(component.parent.position, component.velocity, dt);
     },
-    collide() {},
-  });
+    {
+      physics,
+      boundingBox: box3_setFromObject(box3_create(), entity),
+      velocity: vec3_create(),
+      collide() {},
+    },
+  );
 };
 
 export var physics_add = (entity, physics) => {

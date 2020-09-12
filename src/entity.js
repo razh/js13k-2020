@@ -1,11 +1,4 @@
-export var component_create = options => {
-  var update = () => {};
-
-  if (typeof options === 'function') {
-    update = options;
-    options = {};
-  }
-
+export var component_create = (update, options) => {
   return {
     parent: undefined,
     update,
