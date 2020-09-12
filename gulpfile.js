@@ -123,7 +123,23 @@ function bundle() {
 }
 
 function minify() {
-  return gulp.src('build/bundle.js').pipe($.terser()).pipe(gulp.dest('dist'));
+  return gulp
+    .src('build/bundle.js')
+    .pipe(
+      $.terser({
+        compress: {
+          drop_console: true,
+          ecma: 2020,
+          module: true,
+          passes: 2,
+          unsafe_arrows: true,
+        },
+        mangle: {
+          module: true,
+        },
+      }),
+    )
+    .pipe(gulp.dest('dist'));
 }
 
 function html() {
