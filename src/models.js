@@ -11,9 +11,11 @@ import {
   ny,
   ny_nz,
   nz,
+  px_ny,
   px_ny_nz,
   px_ny_pz,
   px_nz,
+  px_py,
   px_pz,
   py,
   py_nz,
@@ -175,7 +177,7 @@ export var file_create = color => {
   return mesh_create(box([28, 32, 2], align(ny), translate(0, 4, 0)), material);
 };
 
-export var mac_create = () => {
+export var mac_create = isEnemy => {
   var size = 24;
   var height = 32;
   var baseSize = 20;
@@ -204,8 +206,8 @@ export var mac_create = () => {
   );
 
   var eye = box(
-    [3, 8, 0.5],
-    colors([all, [1, 256, 2]]),
+    [3, isEnemy ? 12 : 8, 0.5],
+    colors([all, isEnemy ? [256, 1, 1] : [1, 256, 2]]),
     relativeAlign(nz, screen, pz),
   );
 
@@ -213,12 +215,21 @@ export var mac_create = () => {
     base,
     body,
     screen,
-    compose(clone(), translate(-4, 2, 0))(eye),
-    compose(clone(), translate(4, 2, 0))(eye),
+    compose(
+      clone(),
+      translate(-4, 2, 0),
+      ...(isEnemy ? [$translateY([px_py, -4], [nx_ny, 4])] : []),
+    )(eye),
+    compose(
+      clone(),
+      translate(4, 2, 0),
+      ...(isEnemy ? [$translateY([nx_py, -4], [px_ny, 4])] : []),
+    )(eye),
   );
 
   var material = material_create();
   vec3_setScalar(material.color, 1.5);
+  if (isEnemy) material.color.x = 3;
   material.shininess = 0;
 
   return mesh_create(geometry, material);
