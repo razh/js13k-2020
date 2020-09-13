@@ -231,7 +231,7 @@ addEventListener('keypress', event => {
     running = !running;
     if (running) {
       animate();
-    } else {
+    } else if (DEBUG) {
       document.exitPointerLock();
     }
   }
