@@ -492,7 +492,7 @@ export var map0 = (gl, scene, camera) => {
           playSuccess();
           div(text, 'Uploaded!', 2000);
           uploaded++;
-          div(score, 'Score: ' + uploaded);
+          score.textContent = 'Score: ' + uploaded;
           fileMeshes = fileMeshes.filter(mesh => mesh !== uploadFileMesh);
           object3d_remove(map, uploadFileMesh);
           uploadFileMesh = entity_add(

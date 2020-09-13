@@ -102,10 +102,29 @@ function glsl() {
   };
 }
 
+function replace() {
+  return {
+    transform(code) {
+      var transformedCode = code;
+      [
+        [/directionalLights/g, 'dL'],
+        [/modelViewMatrix/g, 'mVM'],
+        [/fogPosition/g, 'fP'],
+        [/fogColor/g, 'fC'],
+        [/fogNear/g, 'fN'],
+        [/fogFar/g, 'fF'],
+      ].map(([a, b]) => {
+        transformedCode = transformedCode.replace(a, b);
+      });
+      return transformedCode;
+    },
+  };
+}
+
 function bundle() {
   return rollup({
     input: 'src/index.js',
-    plugins: [glConstants(), glsl()],
+    plugins: [glConstants(), glsl(), replace()],
   })
     .then(bundle =>
       bundle.write({
