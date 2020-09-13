@@ -115,24 +115,19 @@ export var bridge_create = (start, end, height = start.y) => {
 };
 
 export var building0_create = () => {
-  /*
-  ┌───┬─┐
-  │   ├─┘
-  └───┘
-  */
-
   var _256_256 = [256, 256, 256];
   var _256_128 = [256, 128, 256];
   var _128_256 = [128, 256, 128];
   var _128_128 = [128, 128, 128];
   var _128_64 = [128, 64, 128];
   var a = box(_256_128, align(ny));
-  return compose(
-    ...[a, box(_128_64, relativeAlign(ny_nz, a, py_nz))].map(merge),
-  )(geom_create());
+  return [a, box(_128_64, relativeAlign(ny_nz, a, py_nz))];
 };
 
-export var building1_create = () => {};
+export var building1_create = () => {
+  return box([64, 320, 320], align(ny));
+};
+
 export var building2_create = () => {};
 
 export var bulletGeometry = boxGeom_create(4, 4, 12);

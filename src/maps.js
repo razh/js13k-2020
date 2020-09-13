@@ -21,6 +21,7 @@ import {
   box,
   bridge_create,
   building0_create,
+  building1_create,
   bulletGeometry,
   controlPoint_create,
   controlPointGeom_create,
@@ -90,7 +91,7 @@ var _r0 = ray_create();
 var _v0 = vec3_create();
 var _v1 = vec3_create();
 
-var cameraDelta = vec3_create(0, 128, 128);
+var cameraDelta = vec3_create(96, 192, 192);
 
 var worldToGrid = vector => vec3_round(vec3_divideScalar(vector, CELL_SIZE));
 var gridToWorld = vector => vec3_multiplyScalar(vector, CELL_SIZE);
@@ -153,7 +154,7 @@ export var map0 = (gl, scene, camera) => {
   object3d_add(map, trail_create(player));
 
   var groundMesh = physics_add(
-    mesh_create(box([2048, 64, 2048], align(py)), material_create()),
+    mesh_create(box([896, 64, 1024], align(py)), material_create()),
     BODY_STATIC,
   );
   Object.assign(groundMesh.material.color, color_CYAN);
@@ -187,6 +188,7 @@ export var map0 = (gl, scene, camera) => {
   var controlPointMeshes = [
     [64, 0, 0],
     [0, 0, 256],
+    [-320, 0, 0],
   ].map(position => {
     var mesh = physics_add(controlPoint_create(), BODY_STATIC);
     mesh.geometry = controlPointGeom_create();
@@ -206,16 +208,16 @@ export var map0 = (gl, scene, camera) => {
   // Bridges
   [
     [
-      [-992, 96, -64],
-      [256, 96, -64],
+      [-448, 96, -196],
+      [192, 96, -196],
     ],
     [
-      [96, 64, -160],
+      [96, 64, -320],
       [96, 64, 256],
     ],
     [
-      [-96, 128, -512],
-      [-96, 128, 512],
+      [-256, 128, -512],
+      [-256, 128, 512],
     ],
   ]
     .flatMap(([start, end, height]) =>
@@ -253,21 +255,37 @@ export var map0 = (gl, scene, camera) => {
     [[128, 32, 64], [-256, 0, 192], blockTransform],
   ].map(createBlock);
 
-  [building0_create()].map(geometry => {
+  building0_create().map(geometry => {
     var mesh = physics_add(
       mesh_create(geometry, material_create()),
       BODY_STATIC,
     );
-    vec3_set(mesh.position, 384, 0, 0);
+    vec3_set(mesh.position, 320, 0, -128);
     createShadow(mesh);
     object3d_add(map, mesh);
     return mesh;
   });
 
+   [building1_create()].map(geometry => {
+    var mesh = physics_add(
+      mesh_create(geometry, material_create()),
+      BODY_STATIC,
+    );
+    vec3_set(mesh.position, -480, 0, 0);
+    createShadow(mesh);
+    object3d_add(map, mesh);
+    return mesh;
+   });
+
+  var windowXGeometry = window_create(1);
+  var windowZGeometry = window_create();
+
   [
-    [window_create(false), [64, 96, 0]],
-    ...spaceBetween(0, 128, 2).flatMap(y =>
-      spaceBetween(256, 512, 3).map(x => [window_create(true), [x, y, 128]]),
+    ...spaceBetween(-160, 160, 6).flatMap(z =>
+      spaceBetween(0, 320, 6).map(y => [windowZGeometry, [-448, y, z]]),
+    ),
+    ...spaceBetween(196, 448, 2).flatMap(x =>
+      spaceBetween(0, 128, 3).map(y => [windowXGeometry, [x, y, 0]]),
     ),
   ].map(([geometry, position]) => {
     var mesh = mesh_create(geometry, material_create());
