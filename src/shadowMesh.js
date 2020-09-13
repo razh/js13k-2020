@@ -5,6 +5,7 @@ import { vec3_clone, vec3_dot, vec3_Y } from './vec3.js';
 
 var shadowMatrix = mat4_create();
 var normal = vec3_clone(vec3_Y);
+var w = 0.001;
 
 var shadowMaterial = material_create();
 
@@ -18,7 +19,7 @@ export var shadowMesh_create = mesh => {
 // amount of light-ray divergence. Ranging from:
 // 0.001 = sunlight(min divergence) to 1.0 = pointlight(max divergence)
 // must be slightly greater than 0, due to 0 causing matrixInverse errors
-export var shadowMesh_update = (shadowMesh, lightPosition, w = 0.001) => {
+export var shadowMesh_update = (shadowMesh, lightPosition) => {
   var { y } = shadowMesh.position;
 
   // based on https://www.opengl.org/archives/resources/features/StencilTalk/tsld021.htm

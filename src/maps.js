@@ -108,7 +108,7 @@ var _r0 = ray_create();
 var _v0 = vec3_create();
 var _v1 = vec3_create();
 
-var cameraDelta = vec3_create(96, 192, 192);
+var cameraDelta = vec3_create(32, 192, 192);
 
 var worldToGrid = vector => vec3_round(vec3_divideScalar(vector, CELL_SIZE));
 var gridToWorld = vector => vec3_multiplyScalar(vector, CELL_SIZE);
@@ -228,12 +228,10 @@ export var map0 = (gl, scene, camera) => {
     return mesh;
   };
 
-  var fileMeshes = [...Array(1)].map((_, index) => {
-    var mesh = createFileMesh();
-    mesh.position.x = -64 * (index + 1);
-    object3d_add(map, mesh);
-    return mesh;
-  });
+  var initialFileMesh = createFileMesh();
+  initialFileMesh.position.x = -64;
+  object3d_add(map, initialFileMesh);
+  var fileMeshes = [initialFileMesh];
 
   var controlPointMeshes = [
     [-96, 0, 128],
@@ -451,7 +449,7 @@ export var map0 = (gl, scene, camera) => {
           fileMeshes,
         )) &&
         vec3_distanceTo(playerMesh.position, nearestFileMesh.position) <
-          Math.SQRT2 * CELL_SIZE
+          2 * CELL_SIZE
       ) {
         Object.assign(selectionMesh.position, nearestFileMesh.position);
       }
@@ -464,7 +462,7 @@ export var map0 = (gl, scene, camera) => {
           controlPointMeshes,
         )) &&
         vec3_distanceTo(playerMesh.position, nearestControlPointMesh.position) <
-          Math.SQRT2 * CELL_SIZE
+          2 * CELL_SIZE
       ) {
         Object.assign(selectionMesh.position, nearestControlPointMesh.position);
         // Trace down to control point mesh.
@@ -571,7 +569,7 @@ export var map0 = (gl, scene, camera) => {
                 ...fileMeshes.filter(
                   mesh =>
                     mesh !== selectedMesh &&
-                    vec3_equals(mesh.position, controlPointMeshes[0].position),
+                    !vec3_equals(mesh.position, controlPointMeshes[0].position),
                 ),
                 playerMesh,
               ]);
@@ -726,7 +724,7 @@ export var map0 = (gl, scene, camera) => {
 
       fileMeshes.map(mesh => object3d_rotateY(mesh, dt));
 
-      if (playerMesh.position.y < -2048) {
+      if (playerMesh.position.y < -1024) {
         u.hidden = false;
       }
     }),
