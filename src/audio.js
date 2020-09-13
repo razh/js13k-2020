@@ -2,7 +2,7 @@ import { DEBUG } from './constants.js';
 import { randFloatSpread } from './math.js';
 
 var Context =
-  AudioContext ||
+  window.AudioContext ||
   // eslint-disable-next-line no-undef
   webkitAudioContext;
 
