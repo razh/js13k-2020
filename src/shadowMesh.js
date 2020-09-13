@@ -24,25 +24,27 @@ export var shadowMesh_update = (shadowMesh, lightPosition, w = 0.001) => {
   // based on https://www.opengl.org/archives/resources/features/StencilTalk/tsld021.htm
   var dot = vec3_dot(normal, lightPosition) - y * w;
 
-  shadowMatrix[0] = dot - lightPosition.x * normal.x;
-  shadowMatrix[4] = -lightPosition.x * normal.y;
-  shadowMatrix[8] = -lightPosition.x * normal.z;
-  shadowMatrix[12] = -lightPosition.x * -y;
+  shadowMatrix.set([
+    dot - lightPosition.x * normal.x,
+    -lightPosition.y * normal.x,
+    -lightPosition.z * normal.x,
+    -w * normal.x,
 
-  shadowMatrix[1] = -lightPosition.y * normal.x;
-  shadowMatrix[5] = dot - lightPosition.y * normal.y;
-  shadowMatrix[9] = -lightPosition.y * normal.z;
-  shadowMatrix[13] = -lightPosition.y * -y;
+    -lightPosition.x * normal.y,
+    dot - lightPosition.y * normal.y,
+    -lightPosition.z * normal.y,
+    -w * normal.y,
 
-  shadowMatrix[2] = -lightPosition.z * normal.x;
-  shadowMatrix[6] = -lightPosition.z * normal.y;
-  shadowMatrix[10] = dot - lightPosition.z * normal.z;
-  shadowMatrix[14] = -lightPosition.z * -y;
+    -lightPosition.x * normal.z,
+    -lightPosition.y * normal.z,
+    dot - lightPosition.z * normal.z,
+    -w * normal.z,
 
-  shadowMatrix[3] = -w * normal.x;
-  shadowMatrix[7] = -w * normal.y;
-  shadowMatrix[11] = -w * normal.z;
-  shadowMatrix[15] = dot - w * -y;
+    -lightPosition.x * -y,
+    -lightPosition.y * -y,
+    -lightPosition.z * -y,
+    dot - w * -y,
+  ]);
 
   mat4_multiplyMatrices(
     shadowMesh.matrixWorld,

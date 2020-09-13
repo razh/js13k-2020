@@ -85,59 +85,71 @@ export var mat4_lookAt = (m, eye, target, up) => {
 };
 
 export var mat4_multiplyMatrices = (m, a, b) => {
-  var a11 = a[0],
-    a12 = a[4],
-    a13 = a[8],
-    a14 = a[12];
-  var a21 = a[1],
-    a22 = a[5],
-    a23 = a[9],
-    a24 = a[13];
-  var a31 = a[2],
-    a32 = a[6],
-    a33 = a[10],
-    a34 = a[14];
-  var a41 = a[3],
-    a42 = a[7],
-    a43 = a[11],
-    a44 = a[15];
+  var [
+    a11,
+    a21,
+    a31,
+    a41,
 
-  var b11 = b[0],
-    b12 = b[4],
-    b13 = b[8],
-    b14 = b[12];
-  var b21 = b[1],
-    b22 = b[5],
-    b23 = b[9],
-    b24 = b[13];
-  var b31 = b[2],
-    b32 = b[6],
-    b33 = b[10],
-    b34 = b[14];
-  var b41 = b[3],
-    b42 = b[7],
-    b43 = b[11],
-    b44 = b[15];
+    a12,
+    a22,
+    a32,
+    a42,
 
-  m[0] = a11 * b11 + a12 * b21 + a13 * b31 + a14 * b41;
-  m[4] = a11 * b12 + a12 * b22 + a13 * b32 + a14 * b42;
-  m[8] = a11 * b13 + a12 * b23 + a13 * b33 + a14 * b43;
-  m[12] = a11 * b14 + a12 * b24 + a13 * b34 + a14 * b44;
+    a13,
+    a23,
+    a33,
+    a43,
 
-  m[1] = a21 * b11 + a22 * b21 + a23 * b31 + a24 * b41;
-  m[5] = a21 * b12 + a22 * b22 + a23 * b32 + a24 * b42;
-  m[9] = a21 * b13 + a22 * b23 + a23 * b33 + a24 * b43;
-  m[13] = a21 * b14 + a22 * b24 + a23 * b34 + a24 * b44;
+    a14,
+    a24,
+    a34,
+    a44,
+  ] = a;
 
-  m[2] = a31 * b11 + a32 * b21 + a33 * b31 + a34 * b41;
-  m[6] = a31 * b12 + a32 * b22 + a33 * b32 + a34 * b42;
-  m[10] = a31 * b13 + a32 * b23 + a33 * b33 + a34 * b43;
-  m[14] = a31 * b14 + a32 * b24 + a33 * b34 + a34 * b44;
+  var [
+    b11,
+    b21,
+    b31,
+    b41,
 
-  m[3] = a41 * b11 + a42 * b21 + a43 * b31 + a44 * b41;
-  m[7] = a41 * b12 + a42 * b22 + a43 * b32 + a44 * b42;
-  m[11] = a41 * b13 + a42 * b23 + a43 * b33 + a44 * b43;
-  m[15] = a41 * b14 + a42 * b24 + a43 * b34 + a44 * b44;
+    b12,
+    b22,
+    b32,
+    b42,
+
+    b13,
+    b23,
+    b33,
+    b43,
+
+    b14,
+    b24,
+    b34,
+    b44,
+  ] = b;
+
+  m.set([
+    a11 * b11 + a12 * b21 + a13 * b31 + a14 * b41,
+    a21 * b11 + a22 * b21 + a23 * b31 + a24 * b41,
+    a31 * b11 + a32 * b21 + a33 * b31 + a34 * b41,
+    a41 * b11 + a42 * b21 + a43 * b31 + a44 * b41,
+
+    a11 * b12 + a12 * b22 + a13 * b32 + a14 * b42,
+    a21 * b12 + a22 * b22 + a23 * b32 + a24 * b42,
+    a31 * b12 + a32 * b22 + a33 * b32 + a34 * b42,
+    a41 * b12 + a42 * b22 + a43 * b32 + a44 * b42,
+
+    a11 * b13 + a12 * b23 + a13 * b33 + a14 * b43,
+    a21 * b13 + a22 * b23 + a23 * b33 + a24 * b43,
+    a31 * b13 + a32 * b23 + a33 * b33 + a34 * b43,
+    a41 * b13 + a42 * b23 + a43 * b33 + a44 * b43,
+
+    a11 * b14 + a12 * b24 + a13 * b34 + a14 * b44,
+    a21 * b14 + a22 * b24 + a23 * b34 + a24 * b44,
+    a31 * b14 + a32 * b24 + a33 * b34 + a34 * b44,
+    a41 * b14 + a42 * b24 + a43 * b34 + a44 * b44,
+  ]);
 
   return m;
 };
@@ -152,22 +164,27 @@ export var mat4_setPosition = (m, v) => {
 
 export var mat4_getInverse = (a, b) => {
   // based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm
-  var n11 = b[0],
-    n21 = b[1],
-    n31 = b[2],
-    n41 = b[3];
-  var n12 = b[4],
-    n22 = b[5],
-    n32 = b[6],
-    n42 = b[7];
-  var n13 = b[8],
-    n23 = b[9],
-    n33 = b[10],
-    n43 = b[11];
-  var n14 = b[12],
-    n24 = b[13],
-    n34 = b[14],
-    n44 = b[15];
+  var [
+    n11,
+    n21,
+    n31,
+    n41,
+
+    n12,
+    n22,
+    n32,
+    n42,
+
+    n13,
+    n23,
+    n33,
+    n43,
+
+    n14,
+    n24,
+    n34,
+    n44,
+  ] = b;
 
   var t11 =
     n23 * n34 * n42 -
@@ -206,109 +223,111 @@ export var mat4_getInverse = (a, b) => {
 
   var detInv = 1 / det;
 
-  a[0] = t11 * detInv;
-  a[1] =
+  a.set([
+    t11 * detInv,
+
     (n24 * n33 * n41 -
       n23 * n34 * n41 -
       n24 * n31 * n43 +
       n21 * n34 * n43 +
       n23 * n31 * n44 -
       n21 * n33 * n44) *
-    detInv;
-  a[2] =
+      detInv,
+
     (n22 * n34 * n41 -
       n24 * n32 * n41 +
       n24 * n31 * n42 -
       n21 * n34 * n42 -
       n22 * n31 * n44 +
       n21 * n32 * n44) *
-    detInv;
-  a[3] =
+      detInv,
+
     (n23 * n32 * n41 -
       n22 * n33 * n41 -
       n23 * n31 * n42 +
       n21 * n33 * n42 +
       n22 * n31 * n43 -
       n21 * n32 * n43) *
-    detInv;
+      detInv,
 
-  a[4] = t12 * detInv;
-  a[5] =
+    t12 * detInv,
+
     (n13 * n34 * n41 -
       n14 * n33 * n41 +
       n14 * n31 * n43 -
       n11 * n34 * n43 -
       n13 * n31 * n44 +
       n11 * n33 * n44) *
-    detInv;
-  a[6] =
+      detInv,
+
     (n14 * n32 * n41 -
       n12 * n34 * n41 -
       n14 * n31 * n42 +
       n11 * n34 * n42 +
       n12 * n31 * n44 -
       n11 * n32 * n44) *
-    detInv;
-  a[7] =
+      detInv,
+
     (n12 * n33 * n41 -
       n13 * n32 * n41 +
       n13 * n31 * n42 -
       n11 * n33 * n42 -
       n12 * n31 * n43 +
       n11 * n32 * n43) *
-    detInv;
+      detInv,
 
-  a[8] = t13 * detInv;
-  a[9] =
+    t13 * detInv,
+
     (n14 * n23 * n41 -
       n13 * n24 * n41 -
       n14 * n21 * n43 +
       n11 * n24 * n43 +
       n13 * n21 * n44 -
       n11 * n23 * n44) *
-    detInv;
-  a[10] =
+      detInv,
+
     (n12 * n24 * n41 -
       n14 * n22 * n41 +
       n14 * n21 * n42 -
       n11 * n24 * n42 -
       n12 * n21 * n44 +
       n11 * n22 * n44) *
-    detInv;
-  a[11] =
+      detInv,
+
     (n13 * n22 * n41 -
       n12 * n23 * n41 -
       n13 * n21 * n42 +
       n11 * n23 * n42 +
       n12 * n21 * n43 -
       n11 * n22 * n43) *
-    detInv;
+      detInv,
 
-  a[12] = t14 * detInv;
-  a[13] =
+    t14 * detInv,
+
     (n13 * n24 * n31 -
       n14 * n23 * n31 +
       n14 * n21 * n33 -
       n11 * n24 * n33 -
       n13 * n21 * n34 +
       n11 * n23 * n34) *
-    detInv;
-  a[14] =
+      detInv,
+
     (n14 * n22 * n31 -
       n12 * n24 * n31 -
       n14 * n21 * n32 +
       n11 * n24 * n32 +
       n12 * n21 * n34 -
       n11 * n22 * n34) *
-    detInv;
-  a[15] =
+      detInv,
+
     (n12 * n23 * n31 -
       n13 * n22 * n31 +
       n13 * n21 * n32 -
       n11 * n23 * n32 -
       n12 * n21 * n33 +
       n11 * n22 * n33) *
-    detInv;
+      detInv,
+  ]);
 
   return a;
 };
@@ -354,25 +373,27 @@ export var mat4_compose = (m, position, quaternion, scale) => {
     sy = scale.y,
     sz = scale.z;
 
-  m[0] = (1 - (yy + zz)) * sx;
-  m[1] = (xy + wz) * sx;
-  m[2] = (xz - wy) * sx;
-  m[3] = 0;
+  m.set([
+    (1 - (yy + zz)) * sx,
+    (xy + wz) * sx,
+    (xz - wy) * sx,
+    0,
 
-  m[4] = (xy - wz) * sy;
-  m[5] = (1 - (xx + zz)) * sy;
-  m[6] = (yz + wx) * sy;
-  m[7] = 0;
+    (xy - wz) * sy,
+    (1 - (xx + zz)) * sy,
+    (yz + wx) * sy,
+    0,
 
-  m[8] = (xz + wy) * sz;
-  m[9] = (yz - wx) * sz;
-  m[10] = (1 - (xx + yy)) * sz;
-  m[11] = 0;
+    (xz + wy) * sz,
+    (yz - wx) * sz,
+    (1 - (xx + yy)) * sz,
+    0,
 
-  m[12] = position.x;
-  m[13] = position.y;
-  m[14] = position.z;
-  m[15] = 1;
+    position.x,
+    position.y,
+    position.z,
+    1,
+  ]);
 
   return m;
 };
