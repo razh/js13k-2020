@@ -28,6 +28,7 @@ import {
   align,
   relativeAlign,
 } from './boxTransforms.js';
+import { color_AMBIENT } from './constants.js';
 import { component_create, entity_add } from './entity.js';
 import { clone, geom_create, merge, scale, translate } from './geom.js';
 import { material_create } from './material.js';
@@ -401,7 +402,7 @@ export var window_create = isX => {
 
   var center = box(
     isX ? [width, height, depth] : [depth, height, width],
-    colors([all, 0]),
+    colors([all, color_AMBIENT]),
   );
 
   return mergeAll(

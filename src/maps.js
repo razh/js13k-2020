@@ -3,7 +3,13 @@ import { colors } from './boxColors.js';
 import { ny, py } from './boxIndices.js';
 import { $scale, align } from './boxTransforms.js';
 import { camera_lookAt } from './camera.js';
-import { color_CYAN, color_ORANGE, color_YELLOW, DEBUG } from './constants.js';
+import {
+  color_AMBIENT,
+  color_CYAN,
+  color_ORANGE,
+  color_YELLOW,
+  DEBUG,
+} from './constants.js';
 import { light_create } from './directionalLight.js';
 import { component_create, entity_add } from './entity.js';
 import { interval_create } from './interval.js';
@@ -57,6 +63,7 @@ import {
   vec3_addScaledVector,
   vec3_addVectors,
   vec3_applyQuaternion,
+  vec3_clone,
   vec3_create,
   vec3_cross,
   vec3_distanceTo,
@@ -109,7 +116,7 @@ export var map0 = (gl, scene, camera) => {
   object3d_add(scene, map);
 
   // Lights
-  var ambient = vec3_create(0.2, 0.1, 0.3);
+  var ambient = vec3_clone(color_AMBIENT);
   Object.assign(scene.fogColor, ambient);
 
   var light0 = light_create(vec3_create(1, 1, 1.2));
