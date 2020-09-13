@@ -2,6 +2,7 @@
 
 import { bufferGeom_fromGeom } from './bufferGeom.js';
 import { camera_create, camera_updateProjectionMatrix } from './camera.js';
+import { DEBUG } from './constants.js';
 import { controls_create } from './controls.js';
 import { entity_update } from './entity.js';
 import { map0 } from './maps.js';
@@ -50,7 +51,9 @@ scene.fogFar = 1000;
 
 // Camera
 var camera = camera_create(90);
-pointerLock_create(controls_create(camera), canvas);
+if (DEBUG) {
+  pointerLock_create(controls_create(camera), canvas);
+}
 
 var lights = map0(gl, scene, camera);
 

@@ -10,6 +10,7 @@ import {
   nx_pz,
   ny,
   ny_nz,
+  ny_pz,
   nz,
   px_ny,
   px_ny_nz,
@@ -19,6 +20,7 @@ import {
   px_pz,
   py,
   py_nz,
+  py_pz,
   pz,
 } from './boxIndices.js';
 import {
@@ -114,21 +116,40 @@ export var bridge_create = (start, end, height = start.y) => {
   });
 };
 
+// Close factory
 export var building0_create = () => {
-  var _256_256 = [256, 256, 256];
-  var _256_128 = [256, 128, 256];
-  var _128_256 = [128, 256, 128];
-  var _128_128 = [128, 128, 128];
-  var _128_64 = [128, 64, 128];
-  var a = box(_256_128, align(ny));
-  return [a, box(_128_64, relativeAlign(ny_nz, a, py_nz))];
+  var a = box([192, 128, 256], align(ny));
+  return [a, box([128, 64, 128], relativeAlign(ny_nz, a, py_nz))];
 };
 
+// Far windows
 export var building1_create = () => {
-  return box([64, 320, 320], align(ny));
+  return box([256, 320, 320], align(ny));
 };
 
-export var building2_create = () => {};
+// Tower
+export var building2_create = () => {
+  var width = 64;
+  var height = 96;
+  var depth = 64;
+  var wallThickness = 4;
+  var tower = box([width, height, depth], align(ny));
+  return [
+    tower,
+    box(
+      [width, wallThickness, wallThickness],
+      relativeAlign(ny_pz, tower, py_pz),
+    ),
+    box(
+      [wallThickness, wallThickness, depth],
+      relativeAlign(nx_ny, tower, nx_py),
+    ),
+    box(
+      [wallThickness, wallThickness, depth],
+      relativeAlign(px_ny, tower, px_py),
+    ),
+  ];
+};
 
 export var bulletGeometry = boxGeom_create(4, 4, 12);
 
@@ -168,12 +189,12 @@ export var controlPointGeom_create = () => {
 export var file_create = color => {
   var material = material_create();
   Object.assign(material.color, color);
-  vec3_addScaledVector(material.emissive, color, 0.1);
+  vec3_addScaledVector(material.emissive, color, 0.2);
 
   return mesh_create(box([28, 32, 2], align(ny), translate(0, 4, 0)), material);
 };
 
-export var mac_create = isEnemy => {
+var macGeom_create = isEnemy => {
   var size = 24;
   var height = 32;
   var baseSize = 20;
@@ -207,7 +228,7 @@ export var mac_create = isEnemy => {
     relativeAlign(nz, screen, pz),
   );
 
-  var geometry = mergeAll(
+  return mergeAll(
     base,
     body,
     screen,
@@ -222,6 +243,13 @@ export var mac_create = isEnemy => {
       ...(isEnemy ? [$translateY([nx_py, -4], [px_ny, 4])] : []),
     )(eye),
   );
+};
+
+var macGeometry = macGeom_create();
+var enemyMacGeometry = macGeom_create(true);
+
+export var mac_create = isEnemy => {
+  var geometry = isEnemy ? enemyMacGeometry : macGeometry;
 
   var material = material_create();
   vec3_setScalar(material.color, 1.5);

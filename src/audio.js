@@ -1,5 +1,6 @@
 import { DEBUG } from './constants.js';
 import { randFloatSpread } from './math.js';
+import { sample } from './utils.js';
 
 var Context =
   window.AudioContext ||
@@ -48,6 +49,8 @@ var generateNotes = (fn, duration, volume) =>
 // Oscillators
 // f: frequency, t: parameter.
 var sin = f => t => Math.sin(t * 2 * Math.PI * f);
+
+var decay = d => () => t => Math.exp(-t * d);
 
 // Brown noise.
 // https://github.com/Tonejs/Tone.js/blob/dev/Tone/source/Noise.ts
@@ -112,8 +115,6 @@ var adsr = (attack, decay, sustain, release, sustainVolume) => {
   };
 };
 
-addEventListener('click', () => audioContext.resume(), { once: true });
-
 export var playJump = () =>
   playSound(
     generateNotes(
@@ -138,15 +139,36 @@ export var playPickup = () =>
 export var playShoot = () =>
   playSound(
     generateNotes(
-      mul(slide(sin, -300), adsr(0.01, 0.01, 0.1, 0.5, 1)),
-      0.6,
+      mul(slide(sin, -400), adsr(0.001, 0.01, 0.1, 0.2, 1)),
+      0.4,
       0.2,
-    )[76],
+    )[76 + sample([-0.5, 0, 0.5])],
   );
 
-export var playDrop = () =>
+export var playFail = () =>
   playSound(
     generateNotes(mul(sin, adsr(0.01, 0.01, 0.05, 0.05, 1)), 0.2, 0.1)[48],
+  );
+
+export var playSuccess = () =>
+  playSound(
+    generateNotes(
+      mul(pitchJump(sin, toFreq(37), 0.5), adsr(0.2, 0.3, 0.4, 0.2, 1)),
+      1.2,
+      0.2,
+    )[32],
+  );
+
+export var playSuccessAll = () => playSound();
+
+export var playHit = () =>
+  playSound(
+    generateNotes(mul(add(sin, scale(noise, 0.5)), decay(32)), 0.2, 0.5)[32],
+  );
+
+export var playExplosion = () =>
+  playSound(
+    generateNotes(mul(add(sin, scale(noise, 0.5)), decay(8)), 0.8, 0.5)[24],
   );
 
 if (DEBUG) {
@@ -160,7 +182,21 @@ if (DEBUG) {
     }
 
     if (event.key === 'm') {
-      playDrop();
+      playFail();
+    }
+
+    if (event.key === 'n') {
+      playSuccess();
+    }
+
+    if (event.key === 'b') {
+      playHit();
+    }
+
+    if (event.key === 'v') {
+      playExplosion();
     }
   });
 }
+
+addEventListener('click', () => audioContext.resume(), { once: true });

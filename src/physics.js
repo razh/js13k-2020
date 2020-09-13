@@ -19,9 +19,11 @@ import {
   vec3_add,
   vec3_addScaledVector,
   vec3_create,
+  vec3_length,
   vec3_multiplyScalar,
   vec3_normalize,
   vec3_set,
+  vec3_setLength,
   vec3_setScalar,
   vec3_sub,
   vec3_subVectors,
@@ -121,6 +123,10 @@ var narrowPhase = (() => {
       pm_clipVelocity(bodyA.velocity, vec3_normalize(penetration), OVERCLIP);
     } else {
       vec3_multiplyScalar(penetration, 0.5);
+      // HACK: Set minimum level of separation to avoid getting stuck.
+      if (vec3_length(penetration) < OVERCLIP) {
+        vec3_setLength(penetration, OVERCLIP);
+      }
       vec3_add(objectA.position, penetration);
       vec3_sub(objectB.position, penetration);
     }
