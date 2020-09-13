@@ -1,4 +1,11 @@
-import { playExplosion, playHit, playPickup, playShoot } from './audio.js';
+/* global score text u */
+import {
+  playExplosion,
+  playHit,
+  playPickup,
+  playShoot,
+  playSuccess,
+} from './audio.js';
 import { colors } from './boxColors.js';
 import { ny, py } from './boxIndices.js';
 import { $scale, align } from './boxTransforms.js';
@@ -13,6 +20,7 @@ import {
 } from './constants.js';
 import { light_create } from './directionalLight.js';
 import { component_create, entity_add } from './entity.js';
+import { translate } from './geom.js';
 import { interval_create } from './interval.js';
 import { keys_create } from './keys.js';
 import { material_create } from './material.js';
@@ -27,6 +35,7 @@ import {
   bulletGeometry,
   controlPoint_create,
   controlPointGeom_create,
+  explosion_create,
   file_create,
   mac_create,
   selection_create,
@@ -120,6 +129,15 @@ var findNearestObject = (point, objects) => {
   return nearestObject;
 };
 
+var div = (element, textContent, timeout) => {
+  var child = document.createElement('div');
+  child.textContent = textContent;
+  element.append(child);
+  if (timeout) {
+    setTimeout(() => child.remove(), timeout);
+  }
+};
+
 export var map0 = (gl, scene, camera) => {
   var map = object3d_create();
   object3d_add(scene, map);
@@ -161,15 +179,26 @@ export var map0 = (gl, scene, camera) => {
 
   object3d_add(map, trail_create(player));
 
-  var groundMesh = physics_add(
-    mesh_create(
-      box([LEVEL_WIDTH, 128, LEVEL_DEPTH], align(py)),
-      material_create(),
+  // Ground
+  [
+    box(
+      [LEVEL_WIDTH * 0.75, 128, LEVEL_DEPTH],
+      align(py),
+      translate(-LEVEL_WIDTH * 0.125, 0, 0),
     ),
-    BODY_STATIC,
-  );
-  Object.assign(groundMesh.material.color, color_GROUND);
-  object3d_add(map, groundMesh);
+    box(
+      [LEVEL_WIDTH * 0.25, 128, LEVEL_DEPTH * 0.8],
+      align(py),
+      translate(LEVEL_WIDTH * 0.375, 0, -LEVEL_DEPTH * 0.1),
+    ),
+  ].map(geometry => {
+    var mesh = physics_add(
+      mesh_create(geometry, material_create()),
+      BODY_STATIC,
+    );
+    Object.assign(mesh.material.color, color_GROUND);
+    object3d_add(map, mesh);
+  });
 
   var selectionMesh = selection_create();
   selectionMesh.visible = false;
@@ -177,30 +206,39 @@ export var map0 = (gl, scene, camera) => {
 
   var selectedMesh;
 
-  var fileMeshes = [...Array(6)].map((_, index) => {
+  var createFileMesh = () => {
     var [color, text] = sample([
       [color_ORANGE, 'HTML'],
       [color_CYAN, 'CSS'],
       [color_YELLOW, 'JS'],
     ]);
     var mesh = file_create(color);
-    mesh.position.x = -64 * (index + 1);
-    var frontTextMesh = text_create(text);
-    var backTextMesh = text_create(text);
+    var frontTextGeometry = text_create(text);
+    var backTextGeometry = text_create(text);
+    var material = material_create();
+    vec3_setScalar(material.color, 0.2);
+    var frontTextMesh = mesh_create(frontTextGeometry, material);
+    var backTextMesh = mesh_create(backTextGeometry, material);
     vec3_set(backTextMesh.scale, -1, 1, -1);
     vec3_set(frontTextMesh.position, 0, 16, 1);
     vec3_set(backTextMesh.position, 0, 16, -1);
     object3d_add(mesh, frontTextMesh);
     object3d_add(mesh, backTextMesh);
     createShadow(mesh);
+    return mesh;
+  };
+
+  var fileMeshes = [...Array(1)].map((_, index) => {
+    var mesh = createFileMesh();
+    mesh.position.x = -64 * (index + 1);
     object3d_add(map, mesh);
     return mesh;
   });
 
   var controlPointMeshes = [
-    [192, 0, 64],
-    [0, 0, 256],
-    [-320, 0, 0],
+    [-96, 0, 128],
+    // [0, 0, 256],
+    // [-320, 0, 0],
   ].map(position => {
     var mesh = physics_add(controlPoint_create(), BODY_STATIC);
     mesh.geometry = controlPointGeom_create();
@@ -234,12 +272,12 @@ export var map0 = (gl, scene, camera) => {
       [256, 96, -196],
     ],
     [
-      [96, 64, -320],
+      [96, 64, -512],
       [96, 64, 256],
     ],
     [
       [-256, 128, -512],
-      [-256, 128, 512],
+      [-256, 128, 432],
     ],
   ]
     .flatMap(([start, end, height]) =>
@@ -266,39 +304,46 @@ export var map0 = (gl, scene, camera) => {
     align(ny),
     colors([py, 1], [ny, color_GROUND]),
     geom =>
-      $scale([py, { x: randFloat(0.8, 0.9), z: randFloat(0.8, 0.9) }])(geom),
+      $scale([py, { x: randFloat(0.9, 0.95), z: randFloat(0.9, 0.95) }])(geom),
   );
 
   // Blocks
   [
-    // [[128, 32, 128], [0, 0, -256], blockTransform],
-    // [[96, 32, 128], [-256, 0, -160], blockTransform],
-    [[192, 20, 64], [256, 0, 192], blockTransform],
-    [[128, 20, 64], [-256, 0, 192], blockTransform],
+    [[192, 20, 32], [256, 0, 192], blockTransform],
+    [[128, 20, 128], [-32, 0, -384], blockTransform],
   ].map(createBlock);
 
-  building0_create()
-    .map(createStaticMeshFromGeometry)
-    .map(mesh => vec3_set(mesh.position, 352, 0, -128));
-
-  [building1_create()]
-    .map(createStaticMeshFromGeometry)
-    .map(mesh => vec3_set(mesh.position, -576, 0, -64));
-
-  building2_create()
-    .map(createStaticMeshFromGeometry)
-    .map(mesh => vec3_set(mesh.position, 80 + 16, 0, 256 + 32));
+  // Buildings
+  [
+    ...building0_create().map(mesh => [mesh, [352, 0, -128]]),
+    [building1_create(), [-576, 0, -64]],
+    ...building2_create().map(mesh => [mesh, [96, 0, 288]]),
+    [box([96, 160, 96], align(ny)), [-256, 0, 464]],
+    [box([768, 160, 128], align(ny)), [-128, 0, -576]],
+  ].map(([geometry, position]) => {
+    var mesh = createStaticMeshFromGeometry(geometry);
+    vec3_set(mesh.position, ...position);
+    vec3_setScalar(mesh.material.color, 1.2);
+  });
 
   var windowXGeometry = window_create(1);
   var windowZGeometry = window_create();
 
   [
-    ...spaceBetween(-160, 96, 4).flatMap(z =>
+    ...spaceBetween(-64, 96, 2).flatMap(z =>
       spaceBetween(0, 320, 6).map(y => [windowZGeometry, [-448, y, z]]),
     ),
     ...spaceBetween(256, 448, 3).flatMap(x =>
       spaceBetween(0, 128, 2).map(y => [windowXGeometry, [x, y, 0]]),
     ),
+    ...spaceBetween(-224, 64, 4).flatMap(x =>
+      spaceBetween(0, 160, 2).map(y => [windowXGeometry, [x, y, -512]]),
+    ),
+    ...[
+      [128, 64, 288],
+      [-208, 128, 464],
+      [-208, 64, 464],
+    ].map(position => [windowZGeometry, position]),
   ].map(([geometry, position]) => {
     var mesh = mesh_create(geometry, material_create());
     vec3_set(mesh.position, ...position);
@@ -309,13 +354,13 @@ export var map0 = (gl, scene, camera) => {
   var wishForward = -1;
   var wishRight = 0;
 
-  var groundMeshes;
+  var staticMeshes;
 
   var traceGround = mesh => {
     Object.assign(_r0.origin, mesh.position);
     _r0.origin.y += CELL_SIZE;
     vec3_set(_r0.direction, 0, -1, 0);
-    return ray_intersectObjects(_r0, groundMeshes)?.[0];
+    return ray_intersectObjects(_r0, staticMeshes)?.[0];
   };
 
   var traceShadow = mesh => {
@@ -323,12 +368,23 @@ export var map0 = (gl, scene, camera) => {
     object3d_updateWorldMatrix(mesh);
     vec3_setFromMatrixPosition(_r0.origin, mesh.matrixWorld);
     vec3_subVectors(_r0.direction, _r0.origin, light0.position);
-    return ray_intersectObjects(_r0, groundMeshes)?.[0];
+    return ray_intersectObjects(_r0, staticMeshes)?.[0];
+  };
+
+  var createExplosion = position => {
+    var explosion = explosion_create(16);
+    Object.assign(explosion.position, position);
+    explosion.position.y += 16;
+    object3d_add(map, explosion);
   };
 
   var bulletInterval = interval_create(0.1);
-  var enemyInterval = interval_create(2);
-  var fileInterval = interval_create(4);
+  var enemyInterval = interval_create(1.5);
+  var fileIntervalDanger = interval_create(4);
+  var fileIntervalSafe = interval_create(2);
+  var uploadTime = 0;
+  var uploadDuration = 1;
+  var uploaded = 0;
 
   entity_add(
     map,
@@ -374,13 +430,9 @@ export var map0 = (gl, scene, camera) => {
         quat_rotateTowards(playerMesh.quaternion, _q0, 12 * dt);
       }
 
-      groundMeshes = physics_bodies(scene)
+      staticMeshes = physics_bodies(scene)
         .filter(body => body.physics === BODY_STATIC)
         .map(body => body.parent);
-
-      [...fileMeshes, playerMesh].map(
-        mesh => (mesh.shadow.position.y = traceShadow(mesh)?.point.y || 0),
-      );
 
       Object.assign(selectionMesh.position, playerMesh.position);
       worldToGrid(selectionMesh.position);
@@ -433,7 +485,31 @@ export var map0 = (gl, scene, camera) => {
           selectionMesh.visible && !findFileAt(selectionMesh);
       }
 
-      fileMeshes.map(mesh => object3d_rotateY(mesh, dt));
+      var uploadFileMesh = findFileAt(controlPointMeshes[0]);
+      if (uploadFileMesh) {
+        if (!uploadTime) div(text, 'Uploading...', 1000);
+        uploadTime += dt;
+        if (uploadTime > uploadDuration) {
+          uploadTime = 0;
+          playSuccess();
+          div(text, 'Uploaded!', 2000);
+          uploaded++;
+          div(score, 'Score: ' + uploaded);
+          fileMeshes = fileMeshes.filter(mesh => mesh !== uploadFileMesh);
+          object3d_remove(map, uploadFileMesh);
+          uploadFileMesh = entity_add(
+            uploadFileMesh,
+            component_create((component, dt) => {
+              object3d_rotateY(uploadFileMesh, dt);
+              uploadFileMesh.position.y += 100 * dt;
+              if (uploadFileMesh.position.y > 1024) {
+                object3d_remove(map, uploadFileMesh);
+              }
+            }),
+          );
+          object3d_add(map, uploadFileMesh);
+        }
+      }
 
       if (
         bulletInterval(dt) &&
@@ -444,7 +520,7 @@ export var map0 = (gl, scene, camera) => {
         playShoot();
 
         var bulletMaterial = material_create();
-        vec3_set(bulletMaterial.emissive, 1, 1, 0.5);
+        vec3_set(bulletMaterial.emissive, 1, 1, 2);
 
         var time = 0;
         var bullet = entity_add(
@@ -474,7 +550,7 @@ export var map0 = (gl, scene, camera) => {
         Object.assign(bullet.position, playerMesh.position);
         bullet.position.y += 24;
         vec3_addScaledVector(bullet.position, _v0, 16);
-        vec3_addScaledVector(bulletPhysics.velocity, _v0, 1200);
+        vec3_addScaledVector(bulletPhysics.velocity, _v0, 800);
         object3d_add(map, bullet);
 
         bulletPhysics.collide = () => object3d_remove(map, bullet);
@@ -492,7 +568,11 @@ export var map0 = (gl, scene, camera) => {
             if (hasHitGround && enemyMesh.position.y > -CELL_SIZE) {
               // Head towards nearest file.
               var nearestMesh = findNearestObject(enemyMesh.position, [
-                ...fileMeshes.filter(mesh => mesh !== selectedMesh),
+                ...fileMeshes.filter(
+                  mesh =>
+                    mesh !== selectedMesh &&
+                    vec3_equals(mesh.position, controlPointMeshes[0].position),
+                ),
                 playerMesh,
               ]);
               if (nearestMesh) {
@@ -511,6 +591,7 @@ export var map0 = (gl, scene, camera) => {
                       mesh => mesh !== nearestFileMesh,
                     );
                     object3d_remove(map, enemyMesh);
+                    createExplosion(nearestFileMesh.position);
                     return;
                   }
                 }
@@ -568,6 +649,7 @@ export var map0 = (gl, scene, camera) => {
             playHit();
             clearTimeout(hitTimeout);
             if (enemyHealth <= 0) {
+              createExplosion(enemyMesh.position);
               object3d_remove(map, enemyMesh);
             } else {
               enemyMesh.material.emissive.x = 1;
@@ -581,6 +663,71 @@ export var map0 = (gl, scene, camera) => {
             hasHitGround = true;
           }
         };
+        if (enemyMesh.position.y > 10240) {
+          object3d_remove(map, enemyMesh);
+        }
+      }
+
+      if (fileIntervalDanger(dt)) {
+        fileIntervalDanger.reset();
+        var filePhysics;
+        var fileMeshDanger = entity_add(
+          physics_add(createFileMesh(), BODY_DYNAMIC),
+          component_create((component, dt) => {
+            if (filePhysics.physics) {
+              filePhysics.velocity.y -= 800 * dt;
+            }
+            if (fileMeshDanger.position.y > 10240) {
+              object3d_remove(map, fileMeshDanger);
+            }
+          }),
+        );
+        vec3_set(
+          fileMeshDanger.position,
+          randFloatSpread(LEVEL_WIDTH),
+          1024,
+          randFloatSpread(LEVEL_DEPTH),
+        );
+        filePhysics = get_physics_component(fileMeshDanger);
+        filePhysics.collide = mesh => {
+          if (get_physics_component(mesh).physics === BODY_STATIC) {
+            filePhysics.physics = undefined;
+            filePhysics.update = () => {};
+            fileMeshes.push(fileMeshDanger);
+          }
+        };
+        object3d_add(map, fileMeshDanger);
+      }
+
+      if (fileIntervalSafe(dt)) {
+        fileIntervalSafe.reset();
+        var safePositions = [
+          [96, 96, 292],
+          [-256, 160, 480],
+          [352, 128, -48],
+          [-256, 160, -544],
+        ];
+        var fileMeshSafe = createFileMesh();
+        var tryCount = 0;
+        while (tryCount < 4) {
+          vec3_set(fileMeshSafe.position, ...sample(safePositions));
+          if (!findFileAt(fileMeshSafe)) {
+            object3d_add(map, fileMeshSafe);
+            fileMeshes.push(fileMeshSafe);
+            break;
+          }
+          tryCount++;
+        }
+      }
+
+      [...fileMeshes, playerMesh].map(
+        mesh => (mesh.shadow.position.y = traceShadow(mesh)?.point.y || 0),
+      );
+
+      fileMeshes.map(mesh => object3d_rotateY(mesh, dt));
+
+      if (playerMesh.position.y < -2048) {
+        u.hidden = false;
       }
     }),
   );
@@ -621,8 +768,8 @@ export var map0 = (gl, scene, camera) => {
         vec3_set(_r0.direction, 0, 0, -1),
         camera.quaternion,
       );
-      if (groundMeshes) {
-        var intersection = ray_intersectObjects(_r0, groundMeshes)?.[0];
+      if (staticMeshes) {
+        var intersection = ray_intersectObjects(_r0, staticMeshes)?.[0];
         if (intersection) {
           console.log(
             [

@@ -153,10 +153,10 @@ export var playFail = () =>
 export var playSuccess = () =>
   playSound(
     generateNotes(
-      mul(pitchJump(sin, toFreq(37), 0.5), adsr(0.2, 0.3, 0.4, 0.2, 1)),
-      1.2,
+      mul(pitchJump(sin, toFreq(37), 0.5), adsr(0.2, 0.4, 0.5, 0.2, 1)),
+      1.5,
       0.2,
-    )[32],
+    )[48],
   );
 
 export var playSuccessAll = () => playSound();
@@ -170,6 +170,41 @@ export var playExplosion = () =>
   playSound(
     generateNotes(mul(add(sin, scale(noise, 0.5)), decay(8)), 0.8, 0.5)[24],
   );
+
+export var bass = generateNotes(
+  mul(sin, adsr(0.001, 0.01, 0, 0.3, 0.8)),
+  0.5,
+  0.05,
+);
+
+var d = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+var bar = 0;
+
+export var playBassline = async () => {
+  bar++;
+
+  if (bar % 2 === 0) {
+    playSound(bass[32]);
+    await d(120);
+    playSound(bass[32]);
+    await d(240);
+  } else {
+    playSound(bass[32]);
+    await d(240);
+  }
+  playSound(bass[32]);
+  await d(240);
+  playSound(bass[32]);
+  await d(240);
+  playSound(bass[32]);
+  await d(240);
+};
+
+export var playMusic = async () => {
+  await playBassline();
+  playMusic();
+};
 
 if (DEBUG) {
   addEventListener('keydown', event => {
@@ -195,6 +230,10 @@ if (DEBUG) {
 
     if (event.key === 'v') {
       playExplosion();
+    }
+
+    if (event.key === 'l') {
+      playMusic();
     }
   });
 }

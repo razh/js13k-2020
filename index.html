@@ -9,7 +9,7 @@
   <style>
     body {
       margin: 0;
-      background: rgba(20%, 10%, 30%);
+      background: rgba(10%, 10%, 20%);
       color: #fff;
       font-family: Futura, sans-serif;
       overflow: hidden;
@@ -21,24 +21,55 @@
       }
     }
 
-    h1 {
+    .c {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      margin: 0;
       text-align: center;
+    }
+
+    h1 {
+      margin: 0;
       font-size: 4rem;
       font-style: italic;
       border-top: 0.5rem solid;
       border-bottom: 0.5rem solid;
       animation: f 2s 2s forwards;
     }
+
+    #u {
+      font-size: 4rem;
+    }
+
+    #r {
+      text-decoration: underline;
+    }
+
+    #score, #text {
+      position: absolute;
+      left: 0;
+      margin: 1rem;
+      font-size: 2rem;
+    }
+
+    #score {
+      top: 0;
+    }
+
+    #text {
+      bottom: 0;
+    }
   </style>
 </head>
 <body>
   <canvas id="canvas"></canvas>
-  <h1>Another Day<br>at the<br>Website Factory</h1>
+  <h1 class="c">Another Day<br>at the<br>Website Factory</h1>
+  <div class="c" id="u" hidden>
+    <div>Game over</div><a id="r" onclick="location.reload()">Restart</button>
+  </div>
+  <div id="text"></div>
+  <div id="score"></div>
   <script type="module" src="./src/index.js"></script>
 </body>
 </html>

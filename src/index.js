@@ -1,5 +1,6 @@
 /* global canvas */
 
+import { playBassline } from './audio.js';
 import { bufferGeom_fromGeom } from './bufferGeom.js';
 import { camera_create, camera_updateProjectionMatrix } from './camera.js';
 import { DEBUG } from './constants.js';
@@ -216,12 +217,21 @@ addEventListener('resize', () => {
   render();
 });
 
+var playMusic = async () => {
+  await playBassline();
+  if (running) {
+    // eslint-disable-next-line no-unused-vars
+    await playMusic();
+  }
+};
+
 addEventListener('keypress', event => {
   // Pause/play.
   if (event.code === 'KeyP') {
     running = !running;
     if (running) {
       animate();
+      // playMusic();
     } else {
       document.exitPointerLock();
     }
@@ -232,5 +242,6 @@ addEventListener('click', () => {
   if (!running) {
     running = true;
     animate();
+    // playMusic();
   }
 });

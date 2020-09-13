@@ -34,9 +34,15 @@ import { color_AMBIENT } from './constants.js';
 import { component_create, entity_add } from './entity.js';
 import { clone, geom_create, merge, scale, translate } from './geom.js';
 import { material_create } from './material.js';
+import { randFloat, randFloatSpread } from './math.js';
 import { mesh_create } from './mesh.js';
-import { object3d_add, object3d_create } from './object3d.js';
-import { compose } from './utils.js';
+import {
+  object3d_add,
+  object3d_create,
+  object3d_lookAt,
+  object3d_remove,
+} from './object3d.js';
+import { compose, sample } from './utils.js';
 import {
   vec3_addScaledVector,
   vec3_clone,
@@ -44,9 +50,13 @@ import {
   vec3_distanceTo,
   vec3_length,
   vec3_multiplyScalar,
+  vec3_set,
+  vec3_setLength,
   vec3_setScalar,
   vec3_subVectors,
 } from './vec3.js';
+
+var EPSILON = 1e-2;
 
 var _v0 = vec3_create();
 
@@ -94,7 +104,7 @@ export var bridge_create = (start, end, height = start.y) => {
         ? [pierWidth, pierHeight, pierDepth]
         : [pierDepth, pierHeight, pierWidth],
       relativeAlign(py, cap, ny),
-      colors([py, 1], [ny, 0]),
+      colors([py, 1], [ny, color_AMBIENT]),
     );
 
     return [cap, pier].map(
@@ -184,6 +194,68 @@ export var controlPointGeom_create = () => {
     rotate45(size),
     $scale([py, [0.75, 1, 0.75]]),
   );
+};
+
+var explosionGeometry = box([2, 2, 3]);
+var explosionMaterials = [
+  [2, 2, 2],
+  [4, 1, 0],
+  [4, 1, 1],
+].map(color => {
+  var material = material_create();
+  vec3_set(material.color, ...color);
+  vec3_set(material.emissive, ...color);
+  return material;
+});
+var explosionGravity = vec3_create(0, -800, 0);
+
+export var explosion_create = count => {
+  var explosion = object3d_create();
+  var decay = 8;
+
+  var velocities = [...Array(count)].map(() => {
+    var sprite = mesh_create(explosionGeometry, sample(explosionMaterials));
+    vec3_setScalar(sprite.scale, randFloat(1, 8));
+    vec3_set(
+      sprite.position,
+      randFloatSpread(16),
+      randFloatSpread(16),
+      randFloatSpread(16),
+    );
+    object3d_add(explosion, sprite);
+    var velocity = vec3_setLength(
+      vec3_clone(sprite.position),
+      randFloat(64, 128),
+    );
+    object3d_lookAt(sprite, velocity);
+    return velocity;
+  });
+
+  explosion = entity_add(
+    explosion,
+    component_create((component, dt) => {
+      var visibleCount = 0;
+
+      explosion.children.map((sprite, index) => {
+        vec3_addScaledVector(
+          sprite.position,
+          vec3_addScaledVector(velocities[index], explosionGravity, dt),
+          dt,
+        );
+        vec3_multiplyScalar(sprite.scale, 1 - decay * dt);
+
+        if (vec3_length(sprite.scale) > EPSILON) {
+          visibleCount++;
+        }
+      });
+
+      if (!visibleCount) {
+        object3d_remove(explosion.parent, explosion);
+      }
+    }),
+  );
+
+  return explosion;
 };
 
 export var file_create = color => {
@@ -291,7 +363,13 @@ export var selection_create = () => {
   return mesh_create(geometry, material);
 };
 
+var textGeometries = {};
+
 export var text_create = string => {
+  if (textGeometries[string]) {
+    return textGeometries[string];
+  }
+
   var charScale = 1.5;
   var charWidth = 3;
   var charSpacing = 0.8;
@@ -355,11 +433,8 @@ export var text_create = string => {
       })
       .filter(Boolean),
   );
-
-  var material = material_create();
-  vec3_setScalar(material.color, 0.2);
-
-  return mesh_create(geometry, material);
+  textGeometries[string] = geometry;
+  return geometry;
 };
 
 export var trail_create = player => {
@@ -406,7 +481,7 @@ export var trail_create = player => {
       meshes.map(mesh => {
         if (mesh.visible) {
           vec3_multiplyScalar(mesh.scale, 1 - decay * dt);
-          if (vec3_length(mesh.scale) < 0.01) {
+          if (vec3_length(mesh.scale) < EPSILON) {
             mesh.visible = false;
           }
         }
