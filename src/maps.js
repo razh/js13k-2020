@@ -569,7 +569,11 @@ export var map0 = (gl, scene, camera) => {
                 ...fileMeshes.filter(
                   mesh =>
                     mesh !== selectedMesh &&
-                    !vec3_equals(mesh.position, controlPointMeshes[0].position),
+                    !vec3_equals(
+                      mesh.position,
+                      controlPointMeshes[0].position,
+                    ) &&
+                    mesh.position.y <= enemyMesh.position.y,
                 ),
                 playerMesh,
               ]);
