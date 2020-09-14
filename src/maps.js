@@ -570,10 +570,12 @@ export var map0 = (gl, scene, camera) => {
                   mesh =>
                     mesh !== selectedMesh &&
                     !vec3_equals(
-                      mesh.position,
-                      controlPointMeshes[0].position,
+                      worldToGrid(Object.assign(_v0, mesh.position)),
+                      worldToGrid(
+                        Object.assign(_v1, controlPointMeshes[0].position),
+                      ),
                     ) &&
-                    mesh.position.y <= enemyMesh.position.y,
+                    mesh.position.y <= enemyMesh.position.y + CELL_SIZE,
                 ),
                 playerMesh,
               ]);
